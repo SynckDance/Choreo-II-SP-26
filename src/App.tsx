@@ -16,7 +16,7 @@ import { StageTrack } from './pages/StageTrack'
 import { FilmTrack } from './pages/FilmTrack'
 import { StudyLab } from './pages/StudyLab'
 import { LightingGlossary } from './pages/LightingGlossary'
-import { StageDesigns } from './pages/StageDesigns'
+import StageDesigns from './pages/StageDesigns'
 import { FilmWorkflow } from './pages/FilmWorkflow'
 
 // Sign-in page component

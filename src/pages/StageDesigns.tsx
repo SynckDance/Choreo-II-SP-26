@@ -536,21 +536,22 @@ const AUDIO_SPEAKERS = [
 ];
 
 const DOCUMENTS = [
-  { title: 'Technical Specifications', meta: 'Overview • 6 pages', category: 'overview' },
-  { title: 'Construction Drawings', meta: 'Full Set • 27 sheets', category: 'construction' },
-  { title: 'As-Built Drawings', meta: 'Reference • Multi-page', category: 'construction' },
-  { title: 'Structural Evaluation', meta: 'Stage + Gridiron Capacity', category: 'structure' },
-  { title: 'Lighting Section (FFD 2018)', meta: '56 Linesets • Trim Heights', category: 'lighting' },
-  { title: 'Lighting Patch Panels', meta: 'Circuit Layout', category: 'lighting' },
-  { title: 'Projections Plan View', meta: 'Throw Calculations', category: 'projections' },
-  { title: 'Projections Section', meta: 'Barco + Panasonic Specs', category: 'projections' },
-  { title: 'LED Wall Proposal', meta: '45\'-8" × 3⅜"', category: 'projections' },
-  { title: 'Audio Signal Flow', meta: 'Rep System Block Diagram', category: 'audio' },
-  { title: 'Audio Rack Elevations', meta: 'Amp/FOH/RF/IEM Racks', category: 'audio' },
-  { title: 'Audio Panel Details', meta: 'Types A-G + Patch Panels', category: 'audio' },
-  { title: 'Audio Conduit Pathway', meta: 'Stage to Booth Routing', category: 'audio' },
-  { title: 'PE Markups', meta: 'Power + Audio Plans', category: 'electrical' },
-  { title: 'Equipment List', meta: 'Full Inventory', category: 'overview' },
+  { title: 'Technical Specifications', meta: 'Overview • 6 pages', category: 'overview', file: '/docs/Payne_Technical_Specs_03_12_24.pdf' },
+  { title: 'Equipment List', meta: 'Full Inventory', category: 'overview', file: '/docs/01UT_Payne_Equipment_List_2019-03-15.pdf' },
+  { title: 'Construction Drawings', meta: 'Full Set • 27 sheets', category: 'construction', file: '/docs/CP738669_WIN_Payne_Theatre_100__Sealed_Construction_Drawings_02_28_2019.pdf' },
+  { title: 'As-Built Drawings', meta: 'Reference • Multi-page', category: 'construction', file: '/docs/WIN_Payne_Theatre_As_Built_Drawings.pdf' },
+  { title: 'Structural Evaluation', meta: 'Stage + Gridiron Capacity', category: 'structure', file: '/docs/combined_WIN_structural_evaluation.pdf' },
+  { title: 'Lighting Section (FFD 2018)', meta: '56 Linesets • Trim Heights', category: 'lighting', file: '/docs/FFD_Section_100818.pdf' },
+  { title: 'Lighting Patch Panels', meta: 'Circuit Layout', category: 'lighting', file: '/docs/PAYNE_LX_PATCH_PANELS.pdf' },
+  { title: 'Projections Plan View', meta: 'Throw Calculations', category: 'projections', file: '/docs/_10-1-18__Fall_for_Dance_Projections_Plan_View_V2.pdf' },
+  { title: 'Projections Section', meta: 'Barco + Panasonic Specs', category: 'projections', file: '/docs/_10-1-18__Fall_for_Dance_Projections_Sectional_V2.pdf' },
+  { title: 'LED Wall Proposal', meta: '45\'-8" × 3⅜"', category: 'projections', file: '/docs/Payne_AET_Proposal_LED_WALL.pdf' },
+  { title: 'Audio Plots', meta: 'Rep System Drawings', category: 'audio', file: '/docs/02_UT_Payne_Audio_01-14_Plots_2019-03-15.pdf' },
+  { title: 'Audio Signal Flow', meta: 'Rep System Block Diagram', category: 'audio', file: '/docs/03_UT_Payne_Audio_15_Rep_Signal_Flow_2019-06-13.pdf' },
+  { title: 'Audio Rack Elevations', meta: 'Amp/FOH/RF/IEM Racks', category: 'audio', file: '/docs/04_UT_Payne_Audio_15-16_Racks_2019-06-13.pdf' },
+  { title: 'Audio Panel Details', meta: 'Types A-G + Patch Panels', category: 'audio', file: '/docs/05_UT_Payne_Audio_17-18_Panel_Details_2019-06-17.pdf' },
+  { title: 'Audio Conduit Pathway', meta: 'Stage to Booth Routing', category: 'audio', file: '/docs/WIN_PAYNE_AUDIO_CONDUIT_PATHWAY_MARKUP_V1.pdf' },
+  { title: 'PE Markups', meta: 'Power + Audio Plans', category: 'electrical', file: '/docs/06_UT_Payne_PE_Markups_2019-03-15.pdf' },
 ];
 
 export default function StageDesigns() {
@@ -1084,7 +1085,7 @@ function DocumentsSection() {
             </h3>
             <div className="sd-docs-grid">
               {docs.map((doc, i) => (
-                <a href="#" className="sd-doc-card" key={i}>
+                <a href={doc.file} target="_blank" rel="noopener noreferrer" className="sd-doc-card" key={i}>
                   <div className="sd-doc-icon" style={{ background: cat.color }}>📄</div>
                   <div className="sd-doc-info">
                     <div className="sd-doc-title">{doc.title}</div>

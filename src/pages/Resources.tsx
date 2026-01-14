@@ -376,6 +376,10 @@ export default function Resources() {
           <NavLink to="/resources/stage-designs" className="full-page-link">
             View Full Stage Designs Reference →
           </NavLink>
+
+          <NavLink to="/resources/study-lab" className="full-page-link" style={{ marginLeft: '1rem' }}>
+            View Study Lab (15 Choreographers) →
+          </NavLink>
         </>
       ) : (
         <>

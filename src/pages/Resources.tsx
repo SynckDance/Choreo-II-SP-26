@@ -2,21 +2,21 @@ import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 
 const stageDocs = [
-  { title: 'Technical Specifications', desc: 'Overview of B. Iden Payne Theatre', file: '/docs/Payne_Technical_Specs_03_12_24.pdf', category: 'overview' },
-  { title: 'Equipment List', desc: 'Full inventory', file: '/docs/01UT_Payne_Equipment_List_2019-03-15.pdf', category: 'overview' },
-  { title: 'As-Built Drawings', desc: 'Reference drawings', file: '/docs/WIN_Payne_Theatre_As_Built_Drawings.pdf', category: 'construction' },
-  { title: 'Structural Evaluation', desc: 'Stage and gridiron capacity', file: '/docs/combined_WIN_structural_evaluation.pdf', category: 'construction' },
-  { title: 'Lighting Section', desc: '56 linesets and trim heights', file: '/docs/FFD_Section_100818.pdf', category: 'lighting' },
-  { title: 'Lighting Patch Panels', desc: 'Circuit layout', file: '/docs/PAYNE_LX_PATCH_PANELS.pdf', category: 'lighting' },
-  { title: 'Projections Plan View', desc: 'Throw calculations', file: '/docs/_10-1-18__Fall_for_Dance_Projections_Plan_View_V2.pdf', category: 'projections' },
-  { title: 'Projections Section', desc: 'Barco and Panasonic specs', file: '/docs/_10-1-18__Fall_for_Dance_Projections_Sectional_V2.pdf', category: 'projections' },
-  { title: 'LED Wall Proposal', desc: 'Add-alt proposal', file: '/docs/Payne_AET_Proposal_LED_WALL.pdf', category: 'projections' },
-  { title: 'Audio Plots', desc: 'Rep system drawings', file: '/docs/02_UT_Payne_Audio_01-14_Plots_2019-03-15.pdf', category: 'audio' },
-  { title: 'Audio Signal Flow', desc: 'Block diagram', file: '/docs/03_UT_Payne_Audio_15_Rep_Signal_Flow_2019-06-13.pdf', category: 'audio' },
-  { title: 'Audio Rack Elevations', desc: 'Amp, FOH, RF, IEM racks', file: '/docs/04_UT_Payne_Audio_15-16_Racks_2019-06-13.pdf', category: 'audio' },
-  { title: 'Audio Panel Details', desc: 'Types A-G and patch panels', file: '/docs/05_UT_Payne_Audio_17-18_Panel_Details_2019-06-17.pdf', category: 'audio' },
-  { title: 'Audio Conduit Pathway', desc: 'Stage to booth routing', file: '/docs/WIN_PAYNE_AUDIO_CONDUIT_PATHWAY_MARKUP_V1.pdf', category: 'audio' },
-  { title: 'PE Markups', desc: 'Power and audio plans', file: '/docs/06_UT_Payne_PE_Markups_2019-03-15.pdf', category: 'electrical' },
+  { title: 'Technical Specifications', desc: 'Overview of B. Iden Payne Theatre', file: '/docs/public-docs/Payne_Technical_Specs_03_12_24.pdf', category: 'overview' },
+  { title: 'Equipment List', desc: 'Full inventory', file: '/docs/public-docs/01UT_Payne_Equipment_List_2019-03-15.pdf', category: 'overview' },
+  { title: 'As-Built Drawings', desc: 'Reference drawings', file: '/docs/public-docs/WIN_Payne_Theatre_As_Built_Drawings.pdf', category: 'construction' },
+  { title: 'Structural Evaluation', desc: 'Stage and gridiron capacity', file: '/docs/public-docs/combined_WIN_structural_evaluation.pdf', category: 'construction' },
+  { title: 'Lighting Section', desc: '56 linesets and trim heights', file: '/docs/public-docs/FFD_Section_100818.pdf', category: 'lighting' },
+  { title: 'Lighting Patch Panels', desc: 'Circuit layout', file: '/docs/public-docs/PAYNE_LX_PATCH_PANELS.pdf', category: 'lighting' },
+  { title: 'Projections Plan View', desc: 'Throw calculations', file: '/docs/public-docs/_10-1-18__Fall_for_Dance_Projections_Plan_View_V2.pdf', category: 'projections' },
+  { title: 'Projections Section', desc: 'Barco and Panasonic specs', file: '/docs/public-docs/_10-1-18__Fall_for_Dance_Projections_Sectional_V2.pdf', category: 'projections' },
+  { title: 'LED Wall Proposal', desc: 'Add-alt proposal', file: '/docs/public-docs/Payne_AET_Proposal_LED_WALL.pdf', category: 'projections' },
+  { title: 'Audio Plots', desc: 'Rep system drawings', file: '/docs/public-docs/02_UT_Payne_Audio_01-14_Plots_2019-03-15.pdf', category: 'audio' },
+  { title: 'Audio Signal Flow', desc: 'Block diagram', file: '/docs/public-docs/03_UT_Payne_Audio_15_Rep_Signal_Flow_2019-06-13.pdf', category: 'audio' },
+  { title: 'Audio Rack Elevations', desc: 'Amp, FOH, RF, IEM racks', file: '/docs/public-docs/04_UT_Payne_Audio_15-16_Racks_2019-06-13.pdf', category: 'audio' },
+  { title: 'Audio Panel Details', desc: 'Types A-G and patch panels', file: '/docs/public-docs/05_UT_Payne_Audio_17-18_Panel_Details_2019-06-17.pdf', category: 'audio' },
+  { title: 'Audio Conduit Pathway', desc: 'Stage to booth routing', file: '/docs/public-docs/WIN_PAYNE_AUDIO_CONDUIT_PATHWAY_MARKUP_V1.pdf', category: 'audio' },
+  { title: 'PE Markups', desc: 'Power and audio plans', file: '/docs/public-docs/06_UT_Payne_PE_Markups_2019-03-15.pdf', category: 'electrical' },
 ];
 
 const filmTemplates = [

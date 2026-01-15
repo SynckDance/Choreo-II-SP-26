@@ -17,15 +17,8 @@ export default function Layout() {
   const navigate = useNavigate();
   const [darkMode, setDarkMode] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isPWA, setIsPWA] = useState(false);
   const [canGoBack, setCanGoBack] = useState(false);
 
-  // Detect if running as PWA
-  useEffect(() => {
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches 
-      || (window.navigator as any).standalone === true;
-    setIsPWA(isStandalone);
-  }, []);
 
   // Track if we can go back (not on home page)
   useEffect(() => {

@@ -1,4 +1,4 @@
-import { Outlet, NavLink, useLocation } from 'react-router-dom';
+import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { UserButton } from '@clerk/clerk-react';
 import { useEffect, useState } from 'react';
 
@@ -14,14 +14,33 @@ const navItems = [
 
 export default function Layout() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [darkMode, setDarkMode] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isPWA, setIsPWA] = useState(false);
+  const [canGoBack, setCanGoBack] = useState(false);
+
+  // Detect if running as PWA
+  useEffect(() => {
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches 
+      || (window.navigator as any).standalone === true;
+    setIsPWA(isStandalone);
+  }, []);
+
+  // Track if we can go back (not on home page)
+  useEffect(() => {
+    setCanGoBack(location.pathname !== '/');
+  }, [location.pathname]);
 
   // Scroll to top on route change
   useEffect(() => {
     window.scrollTo(0, 0);
     setMobileMenuOpen(false); // Close mobile menu on navigation
   }, [location.pathname]);
+
+  const handleBack = () => {
+    navigate(-1);
+  };
 
   return (
     <div className={`app-container ${darkMode ? 'dark' : 'light'}`}>
@@ -102,6 +121,37 @@ export default function Layout() {
 
         .logo span {
           color: var(--accent);
+        }
+
+        /* Back Button */
+        .back-btn {
+          width: 36px;
+          height: 36px;
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          background: var(--bg-secondary);
+          color: var(--text-primary);
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.1rem;
+          margin-right: 0.75rem;
+          transition: all 0.2s ease;
+        }
+
+        .back-btn:hover {
+          border-color: var(--accent);
+          color: var(--accent);
+        }
+
+        .back-btn:active {
+          transform: scale(0.95);
+        }
+
+        .header-left {
+          display: flex;
+          align-items: center;
         }
 
         /* Navigation */
@@ -336,6 +386,65 @@ export default function Layout() {
           justify-content: space-between;
         }
 
+        /* Bottom Navigation for PWA */
+        .bottom-nav {
+          display: none;
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          background: var(--bg-secondary);
+          border-top: 1px solid var(--border);
+          padding: 0.5rem 0.25rem;
+          padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+          z-index: 100;
+        }
+
+        .bottom-nav-inner {
+          display: flex;
+          justify-content: space-around;
+          align-items: center;
+          max-width: 500px;
+          margin: 0 auto;
+        }
+
+        .bottom-nav-item {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 0.2rem;
+          padding: 0.4rem 0.75rem;
+          text-decoration: none;
+          color: var(--text-muted);
+          font-size: 0.65rem;
+          border-radius: 8px;
+          transition: all 0.2s ease;
+        }
+
+        .bottom-nav-item:hover,
+        .bottom-nav-item.active {
+          color: var(--accent);
+          background: var(--border-light);
+        }
+
+        .bottom-nav-icon {
+          font-size: 1.25rem;
+        }
+
+        @media (max-width: 900px) {
+          .bottom-nav {
+            display: block;
+          }
+
+          .main-content {
+            padding-bottom: 5rem;
+          }
+
+          .footer {
+            padding-bottom: 5rem;
+          }
+        }
+
         /* Scrollbar */
         ::-webkit-scrollbar {
           width: 8px;
@@ -358,9 +467,16 @@ export default function Layout() {
 
       <header className="header">
         <div className="header-inner">
-          <NavLink to="/" className="logo">
-            CHOREOGRAPHY <span>II</span>
-          </NavLink>
+          <div className="header-left">
+            {canGoBack && (
+              <button className="back-btn" onClick={handleBack} aria-label="Go back">
+                ←
+              </button>
+            )}
+            <NavLink to="/" className="logo">
+              CHOREOGRAPHY <span>II</span>
+            </NavLink>
+          </div>
 
           <nav className="nav">
             {navItems.map((item) => (
@@ -452,6 +568,36 @@ export default function Layout() {
           </div>
         </div>
       </footer>
+
+      {/* Bottom Navigation for Mobile/PWA */}
+      <nav className="bottom-nav">
+        <div className="bottom-nav-inner">
+          <NavLink to="/" className={({ isActive }) => `bottom-nav-item ${isActive ? 'active' : ''}`} end>
+            <span className="bottom-nav-icon">🏠</span>
+            Home
+          </NavLink>
+          <NavLink to="/tracks" className={({ isActive }) => `bottom-nav-item ${isActive ? 'active' : ''}`}>
+            <span className="bottom-nav-icon">🎯</span>
+            Tracks
+          </NavLink>
+          <NavLink to="/labs" className={({ isActive }) => `bottom-nav-item ${isActive ? 'active' : ''}`}>
+            <span className="bottom-nav-icon">🔬</span>
+            Labs
+          </NavLink>
+          <NavLink to="/resources" className={({ isActive }) => `bottom-nav-item ${isActive ? 'active' : ''}`}>
+            <span className="bottom-nav-icon">📁</span>
+            Resources
+          </NavLink>
+          <button
+            className="bottom-nav-item"
+            onClick={() => setMobileMenuOpen(true)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+          >
+            <span className="bottom-nav-icon">☰</span>
+            More
+          </button>
+        </div>
+      </nav>
     </div>
   );
 }

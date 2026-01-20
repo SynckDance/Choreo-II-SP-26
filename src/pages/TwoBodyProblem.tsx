@@ -73,40 +73,75 @@ export default function TwoBodyProblem() {
   // Create fallback skeletal figure if FBX fails to load
   const createFallbackFigure = useCallback((scene: THREE.Scene, phraseColor: string) => {
     const material = new THREE.MeshBasicMaterial({ color: phraseColor, wireframe: true });
+    const solidMaterial = new THREE.MeshStandardMaterial({ 
+      color: phraseColor, 
+      emissive: phraseColor,
+      emissiveIntensity: 0.3
+    });
     
     const group = new THREE.Group();
     
     // Head
-    const head = new THREE.Mesh(new THREE.SphereGeometry(10, 16, 16), material);
-    head.position.y = 80;
+    const head = new THREE.Mesh(new THREE.SphereGeometry(12, 16, 16), solidMaterial);
+    head.position.y = 160;
     group.add(head);
     
+    // Neck
+    const neck = new THREE.Mesh(new THREE.CylinderGeometry(4, 4, 10, 8), material);
+    neck.position.y = 145;
+    group.add(neck);
+    
     // Torso
-    const torso = new THREE.Mesh(new THREE.CylinderGeometry(8, 12, 40, 8), material);
-    torso.position.y = 50;
+    const torso = new THREE.Mesh(new THREE.CylinderGeometry(15, 20, 50, 8), material);
+    torso.position.y = 115;
     group.add(torso);
     
-    // Arms
-    const armGeo = new THREE.CylinderGeometry(3, 3, 35, 8);
-    const leftArm = new THREE.Mesh(armGeo, material);
-    leftArm.position.set(-20, 55, 0);
-    leftArm.rotation.z = Math.PI / 4;
-    group.add(leftArm);
+    // Hips
+    const hips = new THREE.Mesh(new THREE.CylinderGeometry(20, 15, 15, 8), material);
+    hips.position.y = 82;
+    group.add(hips);
     
-    const rightArm = new THREE.Mesh(armGeo, material);
-    rightArm.position.set(20, 55, 0);
-    rightArm.rotation.z = -Math.PI / 4;
-    group.add(rightArm);
+    // Arms
+    const armGeo = new THREE.CylinderGeometry(4, 3, 55, 8);
+    const leftUpperArm = new THREE.Mesh(armGeo, material);
+    leftUpperArm.position.set(-25, 115, 0);
+    leftUpperArm.rotation.z = Math.PI / 6;
+    group.add(leftUpperArm);
+    
+    const rightUpperArm = new THREE.Mesh(armGeo, material);
+    rightUpperArm.position.set(25, 115, 0);
+    rightUpperArm.rotation.z = -Math.PI / 6;
+    group.add(rightUpperArm);
     
     // Legs
-    const legGeo = new THREE.CylinderGeometry(4, 3, 45, 8);
+    const legGeo = new THREE.CylinderGeometry(6, 4, 75, 8);
     const leftLeg = new THREE.Mesh(legGeo, material);
-    leftLeg.position.set(-8, 5, 0);
+    leftLeg.position.set(-10, 37, 0);
     group.add(leftLeg);
     
     const rightLeg = new THREE.Mesh(legGeo, material);
-    rightLeg.position.set(8, 5, 0);
+    rightLeg.position.set(10, 37, 0);
     group.add(rightLeg);
+    
+    // Joint markers
+    const jointGeo = new THREE.SphereGeometry(3, 8, 8);
+    const jointPositions = [
+      [0, 140, 0],   // neck
+      [-20, 135, 0], // left shoulder
+      [20, 135, 0],  // right shoulder
+      [-35, 90, 0],  // left elbow
+      [35, 90, 0],   // right elbow
+      [-10, 75, 0],  // left hip
+      [10, 75, 0],   // right hip
+      [-10, 40, 0],  // left knee
+      [10, 40, 0],   // right knee
+    ];
+    
+    jointPositions.forEach(pos => {
+      const joint = new THREE.Mesh(jointGeo, solidMaterial);
+      joint.position.set(pos[0], pos[1], pos[2]);
+      group.add(joint);
+    });
     
     scene.add(group);
     modelRef.current = group;
@@ -114,7 +149,7 @@ export default function TwoBodyProblem() {
   }, []);
 
   // Update mesh material based on visual mode
-  const updateMeshMaterial = useCallback((mesh: THREE.Mesh, mode: string, phraseColor: string) => {
+  const updateMeshMaterial = useCallback((mesh: THREE.Mesh | THREE.SkinnedMesh, mode: string, phraseColor: string) => {
     const color = new THREE.Color(phraseColor);
     
     if (mode === 'wireframe') {
@@ -125,13 +160,14 @@ export default function TwoBodyProblem() {
         opacity: 0.9
       });
     } else if (mode === 'points') {
-      mesh.material = new THREE.PointsMaterial({ color: color, size: 2 });
+      mesh.material = new THREE.PointsMaterial({ color: color, size: 3 });
     } else {
-      mesh.material = new THREE.MeshPhongMaterial({ 
+      mesh.material = new THREE.MeshStandardMaterial({ 
         color: color,
         emissive: color,
-        emissiveIntensity: 0.1,
-        shininess: 30
+        emissiveIntensity: 0.2,
+        metalness: 0.3,
+        roughness: 0.7
       });
     }
   }, []);
@@ -201,31 +237,88 @@ export default function TwoBodyProblem() {
     loader.load(
       '/adzogbo-mocap.fbx',
       (fbx) => {
-        // Compute bounding box to center the model
+        // First, add to scene so we can compute bounds
+        scene.add(fbx);
+        
+        // Compute bounding box
         const box = new THREE.Box3().setFromObject(fbx);
         const center = box.getCenter(new THREE.Vector3());
         const size = box.getSize(new THREE.Vector3());
         
-        // Center the model
-        fbx.position.x = -center.x;
-        fbx.position.y = -box.min.y; // Place feet on ground
-        fbx.position.z = -center.z;
+        console.log('FBX loaded - size:', size, 'center:', center);
         
-        // Scale to fit nicely (target ~150 units tall)
+        // Scale to reasonable size (target height ~150)
         const maxDim = Math.max(size.x, size.y, size.z);
-        const scale = 150 / maxDim;
-        fbx.scale.setScalar(scale);
+        if (maxDim > 0) {
+          const scale = 150 / maxDim;
+          fbx.scale.multiplyScalar(scale);
+        }
         
+        // Recompute box after scaling
+        box.setFromObject(fbx);
+        box.getCenter(center);
+        
+        // Center horizontally, place on ground
+        fbx.position.x -= center.x;
+        fbx.position.z -= center.z;
+        fbx.position.y -= box.min.y;
+        
+        // Apply materials
         fbx.traverse((child) => {
           if (child instanceof THREE.Mesh) {
             child.castShadow = true;
             child.receiveShadow = true;
             updateMeshMaterial(child, visualMode, phraseColor);
           }
+          // Also handle SkinnedMesh for rigged characters
+          if (child instanceof THREE.SkinnedMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+            updateMeshMaterial(child, visualMode, phraseColor);
+          }
         });
 
-        scene.add(fbx);
         modelRef.current = fbx;
+
+        // Add skeleton helper if this is a rigged model (shows bones)
+        fbx.traverse((child) => {
+          if (child instanceof THREE.SkinnedMesh && child.skeleton) {
+            const skeletonHelper = new THREE.SkeletonHelper(child);
+            (skeletonHelper.material as THREE.LineBasicMaterial).linewidth = 2;
+            (skeletonHelper.material as THREE.LineBasicMaterial).color = new THREE.Color(phraseColor);
+            scene.add(skeletonHelper);
+          }
+        });
+        
+        // If no meshes found, create joint spheres from bones
+        let hasMesh = false;
+        fbx.traverse((child) => {
+          if (child instanceof THREE.Mesh || child instanceof THREE.SkinnedMesh) {
+            hasMesh = true;
+          }
+        });
+        
+        if (!hasMesh) {
+          // Create spheres at each bone position
+          const jointMaterial = new THREE.MeshBasicMaterial({ color: phraseColor });
+          const jointGeometry = new THREE.SphereGeometry(2, 8, 8);
+          const boneMaterial = new THREE.LineBasicMaterial({ color: phraseColor });
+          
+          fbx.traverse((child) => {
+            if (child instanceof THREE.Bone) {
+              const joint = new THREE.Mesh(jointGeometry, jointMaterial);
+              child.add(joint);
+              
+              // Draw line to parent
+              if (child.parent instanceof THREE.Bone) {
+                const points = [new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0)];
+                const lineGeom = new THREE.BufferGeometry().setFromPoints(points);
+                const line = new THREE.Line(lineGeom, boneMaterial);
+                child.add(line);
+              }
+            }
+          });
+        }
 
         if (fbx.animations.length > 0) {
           const mixer = new THREE.AnimationMixer(fbx);
@@ -296,7 +389,7 @@ export default function TwoBodyProblem() {
     if (modelRef.current) {
       const phraseColor = PHRASES[currentPhrase].color;
       modelRef.current.traverse((child) => {
-        if (child instanceof THREE.Mesh) {
+        if (child instanceof THREE.Mesh || child instanceof THREE.SkinnedMesh) {
           updateMeshMaterial(child, visualMode, phraseColor);
         }
       });

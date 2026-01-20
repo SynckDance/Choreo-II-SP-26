@@ -632,25 +632,19 @@ export default function TwoBodyProblem() {
           font-style: italic;
         }
 
-        .download-btns {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 0.75rem;
-          margin-top: 1.25rem;
-        }
-
         .download-btn {
           display: inline-flex;
           align-items: center;
           gap: 0.5rem;
-          padding: 0.6rem 1rem;
+          padding: 0.75rem 1.25rem;
           background: var(--bg-primary);
           border: 1px solid var(--border);
           border-radius: 8px;
           color: var(--text-primary);
           text-decoration: none;
-          font-size: 0.8rem;
+          font-size: 0.85rem;
           transition: all 0.2s ease;
+          margin-top: 1rem;
         }
 
         .download-btn:hover {
@@ -1163,36 +1157,13 @@ export default function TwoBodyProblem() {
           one question: What are we making today?
         </p>
         
-        <div className="download-btns">
-          <a 
-            href="/class-1-planning.pdf" 
-            download="Class-1-Two-Body-Problem.pdf"
-            className="download-btn"
-          >
-            📄 Class Planning PDF
-          </a>
-          <a 
-            href="/two-body-problem-extended-study.md" 
-            download="Two-Body-Problem-Extended-Study.md"
-            className="download-btn"
-          >
-            📖 Extended Technical Study
-          </a>
-          <a 
-            href="/audio-interactive-note.md" 
-            download="Audio-Experience-Guide.md"
-            className="download-btn"
-          >
-            🔊 Audio Guide
-          </a>
-          <a 
-            href="/visual-interactive-note.md" 
-            download="Visual-Experience-Guide.md"
-            className="download-btn"
-          >
-            👁️ Visual Guide
-          </a>
-        </div>
+        <a 
+          href="/class-1-planning.pdf" 
+          download="Class-1-Two-Body-Problem.pdf"
+          className="download-btn"
+        >
+          📄 Download Class Planning PDF
+        </a>
       </div>
 
       <nav className="section-nav">

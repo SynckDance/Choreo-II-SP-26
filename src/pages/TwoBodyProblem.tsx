@@ -1,4 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
 
 // Movement phrase definitions with distinct characteristics
 const PHRASES = {
@@ -7,181 +10,25 @@ const PHRASES = {
     desc: 'Contracted, suspended, caught',
     speed: 'Slow',
     color: '#E85D04',
-    // Movement parameters
-    breathAmp: 2, swayAmp: 3, armAmp: 8, legAmp: 2,
-    breathSpeed: 0.8, swaySpeed: 0.3, armSpeed: 0.5,
-    contract: 0.85, // body scale contraction
+    animSpeed: 0.5,
   },
   B: { 
     name: 'Phrase B: Release', 
     desc: 'Expansive, falling, surrendering',
     speed: 'Medium',
     color: '#10B981',
-    breathAmp: 8, swayAmp: 15, armAmp: 25, legAmp: 10,
-    breathSpeed: 1.5, swaySpeed: 1.2, armSpeed: 2,
-    contract: 1.15,
+    animSpeed: 1.0,
   },
   C: { 
     name: 'Phrase C: Resolution', 
     desc: 'Grounded, still, between',
     speed: 'Variable',
     color: '#6366F1',
-    breathAmp: 4, swayAmp: 6, armAmp: 12, legAmp: 4,
-    breathSpeed: 1, swaySpeed: 0.7, armSpeed: 1,
-    contract: 1,
+    animSpeed: 0.75,
   },
 };
 
 type PhraseKey = keyof typeof PHRASES;
-
-// Skeletal figure with phrase-based movement
-const createSkeletalFigure = (
-  ctx: CanvasRenderingContext2D, 
-  x: number, 
-  y: number, 
-  scale: number, 
-  phase: number, 
-  isFront: boolean, 
-  style: 'skeletal' | 'silhouette' | 'hybrid',
-  phrase: PhraseKey
-) => {
-  const p = PHRASES[phrase];
-  const joints: { [key: string]: { x: number; y: number } } = {};
-  
-  // Apply phrase-specific movement characteristics
-  const breathOffset = Math.sin(phase * p.breathSpeed * 2) * p.breathAmp;
-  const swayOffset = Math.sin(phase * p.swaySpeed) * p.swayAmp;
-  const armSwing = Math.sin(phase * p.armSpeed * 1.5) * p.armAmp;
-  const legShift = Math.cos(phase * p.swaySpeed) * p.legAmp;
-  const bodyScale = scale * p.contract;
-  
-  // Head
-  joints.head = { x: x + swayOffset * 0.3, y: y - 80 * bodyScale + breathOffset };
-  
-  // Spine
-  joints.neck = { x: x + swayOffset * 0.4, y: y - 65 * bodyScale };
-  joints.chest = { x: x + swayOffset * 0.5, y: y - 45 * bodyScale };
-  joints.spine = { x: x + swayOffset * 0.6, y: y - 25 * bodyScale };
-  joints.pelvis = { x: x + swayOffset * 0.7, y: y - 5 * bodyScale };
-  
-  // Arms - more expressive based on phrase
-  const armDrop = phrase === 'A' ? -10 : phrase === 'B' ? 15 : 0;
-  joints.shoulderL = { x: x - 20 * bodyScale + swayOffset * 0.5, y: y - 55 * bodyScale };
-  joints.shoulderR = { x: x + 20 * bodyScale + swayOffset * 0.5, y: y - 55 * bodyScale };
-  joints.elbowL = { x: x - 35 * bodyScale + armSwing, y: y - 35 * bodyScale + armDrop };
-  joints.elbowR = { x: x + 35 * bodyScale - armSwing, y: y - 35 * bodyScale + armDrop };
-  joints.wristL = { x: x - 45 * bodyScale + armSwing * 1.3, y: y - 15 * bodyScale + armDrop * 1.5 };
-  joints.wristR = { x: x + 45 * bodyScale - armSwing * 1.3, y: y - 15 * bodyScale + armDrop * 1.5 };
-  
-  // Legs
-  joints.hipL = { x: x - 12 * bodyScale + swayOffset * 0.7, y: y - 5 * bodyScale };
-  joints.hipR = { x: x + 12 * bodyScale + swayOffset * 0.7, y: y - 5 * bodyScale };
-  joints.kneeL = { x: x - 14 * bodyScale + legShift, y: y + 30 * bodyScale };
-  joints.kneeR = { x: x + 14 * bodyScale - legShift, y: y + 30 * bodyScale };
-  joints.ankleL = { x: x - 15 * bodyScale + legShift * 0.5, y: y + 65 * bodyScale };
-  joints.ankleR = { x: x + 15 * bodyScale - legShift * 0.5, y: y + 65 * bodyScale };
-  
-  const accentColor = p.color;
-  const boneColor = isFront ? '#1a1a1a' : '#666666';
-  const jointColor = isFront ? accentColor : '#888888';
-  
-  // Draw silhouette layer
-  if (style === 'silhouette' || style === 'hybrid') {
-    ctx.fillStyle = isFront ? `${accentColor}20` : 'rgba(100, 100, 100, 0.15)';
-    
-    // Head
-    ctx.beginPath();
-    ctx.ellipse(joints.head.x, joints.head.y, 12 * bodyScale, 15 * bodyScale, 0, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Torso
-    ctx.beginPath();
-    ctx.moveTo(joints.shoulderL.x - 5, joints.shoulderL.y);
-    ctx.quadraticCurveTo(joints.chest.x, joints.chest.y - 10, joints.shoulderR.x + 5, joints.shoulderR.y);
-    ctx.lineTo(joints.hipR.x + 8, joints.hipR.y);
-    ctx.quadraticCurveTo(joints.pelvis.x, joints.pelvis.y + 8, joints.hipL.x - 8, joints.hipL.y);
-    ctx.closePath();
-    ctx.fill();
-    
-    // Arms (silhouette)
-    ctx.lineWidth = 8;
-    ctx.lineCap = 'round';
-    ctx.strokeStyle = isFront ? `${accentColor}15` : 'rgba(100, 100, 100, 0.1)';
-    ctx.beginPath();
-    ctx.moveTo(joints.shoulderL.x, joints.shoulderL.y);
-    ctx.lineTo(joints.elbowL.x, joints.elbowL.y);
-    ctx.lineTo(joints.wristL.x, joints.wristL.y);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(joints.shoulderR.x, joints.shoulderR.y);
-    ctx.lineTo(joints.elbowR.x, joints.elbowR.y);
-    ctx.lineTo(joints.wristR.x, joints.wristR.y);
-    ctx.stroke();
-    
-    // Legs (silhouette)
-    ctx.beginPath();
-    ctx.moveTo(joints.hipL.x, joints.hipL.y);
-    ctx.lineTo(joints.kneeL.x, joints.kneeL.y);
-    ctx.lineTo(joints.ankleL.x, joints.ankleL.y);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(joints.hipR.x, joints.hipR.y);
-    ctx.lineTo(joints.kneeR.x, joints.kneeR.y);
-    ctx.lineTo(joints.ankleR.x, joints.ankleR.y);
-    ctx.stroke();
-  }
-  
-  // Draw skeletal layer
-  if (style === 'skeletal' || style === 'hybrid') {
-    ctx.strokeStyle = boneColor;
-    ctx.lineWidth = 2;
-    ctx.lineCap = 'round';
-    
-    const drawBone = (j1: string, j2: string) => {
-      ctx.beginPath();
-      ctx.moveTo(joints[j1].x, joints[j1].y);
-      ctx.lineTo(joints[j2].x, joints[j2].y);
-      ctx.stroke();
-    };
-    
-    // Spine
-    drawBone('head', 'neck');
-    drawBone('neck', 'chest');
-    drawBone('chest', 'spine');
-    drawBone('spine', 'pelvis');
-    
-    // Arms
-    drawBone('neck', 'shoulderL');
-    drawBone('neck', 'shoulderR');
-    drawBone('shoulderL', 'elbowL');
-    drawBone('shoulderR', 'elbowR');
-    drawBone('elbowL', 'wristL');
-    drawBone('elbowR', 'wristR');
-    
-    // Legs
-    drawBone('pelvis', 'hipL');
-    drawBone('pelvis', 'hipR');
-    drawBone('hipL', 'kneeL');
-    drawBone('hipR', 'kneeR');
-    drawBone('kneeL', 'ankleL');
-    drawBone('kneeR', 'ankleR');
-    
-    // Joints
-    ctx.fillStyle = jointColor;
-    Object.values(joints).forEach(joint => {
-      ctx.beginPath();
-      ctx.arc(joint.x, joint.y, 4, 0, Math.PI * 2);
-      ctx.fill();
-    });
-    
-    // Head outline
-    ctx.strokeStyle = jointColor;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(joints.head.x, joints.head.y, 12 * bodyScale, 0, Math.PI * 2);
-    ctx.stroke();
-  }
-};
 
 // Audio configuration for binaural experience
 const AUDIO_MODES = {
@@ -200,78 +47,285 @@ export default function TwoBodyProblem() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioIntensity, setAudioIntensity] = useState(0.5);
   const [currentPhrase, setCurrentPhrase] = useState<PhraseKey>('A');
-  const [visualStyle, setVisualStyle] = useState<'skeletal' | 'silhouette' | 'hybrid'>('hybrid');
+  const [visualMode, setVisualMode] = useState<'wireframe' | 'solid' | 'points'>('wireframe');
   const [isAnimating, setIsAnimating] = useState(true);
-  const [tempoMultiplier, setTempoMultiplier] = useState(1);
+  const [loadingStatus, setLoadingStatus] = useState<'loading' | 'loaded' | 'error'>('loading');
+  const [loadingProgress, setLoadingProgress] = useState(0);
   
+  // Audio refs
   const audioContextRef = useRef<AudioContext | null>(null);
   const oscillatorsRef = useRef<OscillatorNode[]>([]);
   const gainsRef = useRef<GainNode[]>([]);
   const pannersRef = useRef<StereoPannerNode[]>([]);
   const lfoRef = useRef<OscillatorNode | null>(null);
   
-  const canvasLeftRef = useRef<HTMLCanvasElement | null>(null);
-  const canvasRightRef = useRef<HTMLCanvasElement | null>(null);
-  const animationRef = useRef<number | null>(null);
-  const phaseRef = useRef(0);
+  // Three.js refs
+  const containerRef = useRef<HTMLDivElement>(null);
+  const sceneRef = useRef<THREE.Scene | null>(null);
+  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
+  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
+  const controlsRef = useRef<OrbitControls | null>(null);
+  const mixerRef = useRef<THREE.AnimationMixer | null>(null);
+  const clockRef = useRef<THREE.Clock>(new THREE.Clock());
+  const modelRef = useRef<THREE.Group | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
 
-  // Animation loop with phrase-based movement
-  const animate = useCallback(() => {
-    if (!isAnimating) return;
+  // Create fallback skeletal figure if FBX fails to load
+  const createFallbackFigure = useCallback((scene: THREE.Scene, phraseColor: string) => {
+    const material = new THREE.MeshBasicMaterial({ color: phraseColor, wireframe: true });
     
-    const canvasL = canvasLeftRef.current;
-    const canvasR = canvasRightRef.current;
-    if (!canvasL || !canvasR) return;
+    const group = new THREE.Group();
     
-    const ctxL = canvasL.getContext('2d');
-    const ctxR = canvasR.getContext('2d');
-    if (!ctxL || !ctxR) return;
+    // Head
+    const head = new THREE.Mesh(new THREE.SphereGeometry(10, 16, 16), material);
+    head.position.y = 80;
+    group.add(head);
     
-    phaseRef.current += 0.03 * tempoMultiplier;
+    // Torso
+    const torso = new THREE.Mesh(new THREE.CylinderGeometry(8, 12, 40, 8), material);
+    torso.position.y = 50;
+    group.add(torso);
     
-    // Clear canvases
-    ctxL.clearRect(0, 0, canvasL.width, canvasL.height);
-    ctxR.clearRect(0, 0, canvasR.width, canvasR.height);
+    // Arms
+    const armGeo = new THREE.CylinderGeometry(3, 3, 35, 8);
+    const leftArm = new THREE.Mesh(armGeo, material);
+    leftArm.position.set(-20, 55, 0);
+    leftArm.rotation.z = Math.PI / 4;
+    group.add(leftArm);
     
-    // Draw grid background
-    const phraseColor = PHRASES[currentPhrase].color;
-    [ctxL, ctxR].forEach(ctx => {
-      ctx.strokeStyle = `${phraseColor}15`;
-      ctx.lineWidth = 1;
-      for (let i = 0; i < ctx.canvas.width; i += 20) {
-        ctx.beginPath();
-        ctx.moveTo(i, 0);
-        ctx.lineTo(i, ctx.canvas.height);
-        ctx.stroke();
-      }
-      for (let i = 0; i < ctx.canvas.height; i += 20) {
-        ctx.beginPath();
-        ctx.moveTo(0, i);
-        ctx.lineTo(ctx.canvas.width, i);
-        ctx.stroke();
-      }
-    });
+    const rightArm = new THREE.Mesh(armGeo, material);
+    rightArm.position.set(20, 55, 0);
+    rightArm.rotation.z = -Math.PI / 4;
+    group.add(rightArm);
     
-    // Draw figures with current phrase
-    createSkeletalFigure(ctxL, canvasL.width / 2, canvasL.height / 2 + 20, 1.2, phaseRef.current, true, visualStyle, currentPhrase);
-    createSkeletalFigure(ctxR, canvasR.width / 2, canvasR.height / 2 + 20, 1.2, phaseRef.current, false, visualStyle, currentPhrase);
+    // Legs
+    const legGeo = new THREE.CylinderGeometry(4, 3, 45, 8);
+    const leftLeg = new THREE.Mesh(legGeo, material);
+    leftLeg.position.set(-8, 5, 0);
+    group.add(leftLeg);
     
-    animationRef.current = requestAnimationFrame(animate);
-  }, [isAnimating, visualStyle, currentPhrase, tempoMultiplier]);
+    const rightLeg = new THREE.Mesh(legGeo, material);
+    rightLeg.position.set(8, 5, 0);
+    group.add(rightLeg);
+    
+    scene.add(group);
+    modelRef.current = group;
+    setLoadingStatus('loaded');
+  }, []);
 
-  // Start/stop animation
-  useEffect(() => {
-    if (activeSection === 'visual' && isAnimating) {
-      animationRef.current = requestAnimationFrame(animate);
+  // Update mesh material based on visual mode
+  const updateMeshMaterial = useCallback((mesh: THREE.Mesh, mode: string, phraseColor: string) => {
+    const color = new THREE.Color(phraseColor);
+    
+    if (mode === 'wireframe') {
+      mesh.material = new THREE.MeshBasicMaterial({ 
+        color: color, 
+        wireframe: true,
+        transparent: true,
+        opacity: 0.9
+      });
+    } else if (mode === 'points') {
+      mesh.material = new THREE.PointsMaterial({ color: color, size: 2 });
+    } else {
+      mesh.material = new THREE.MeshPhongMaterial({ 
+        color: color,
+        emissive: color,
+        emissiveIntensity: 0.1,
+        shininess: 30
+      });
     }
-    return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
+  }, []);
+
+  // Initialize Three.js scene
+  const initThreeJS = useCallback(() => {
+    if (!containerRef.current) return;
+
+    const phraseColor = PHRASES[currentPhrase].color;
+
+    // Scene
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0a0a0a);
+    sceneRef.current = scene;
+
+    // Grid
+    const gridHelper = new THREE.GridHelper(200, 20, 0xE85D04, 0x333333);
+    gridHelper.position.y = -50;
+    scene.add(gridHelper);
+
+    // Lights
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+    scene.add(ambientLight);
+
+    const keyLight = new THREE.DirectionalLight(0xffffff, 1);
+    keyLight.position.set(100, 100, 100);
+    scene.add(keyLight);
+
+    const fillLight = new THREE.DirectionalLight(0xE85D04, 0.3);
+    fillLight.position.set(-100, 50, -100);
+    scene.add(fillLight);
+
+    const backLight = new THREE.DirectionalLight(0x6366F1, 0.2);
+    backLight.position.set(0, 100, -100);
+    scene.add(backLight);
+
+    // Camera
+    const camera = new THREE.PerspectiveCamera(
+      45,
+      containerRef.current.clientWidth / containerRef.current.clientHeight,
+      1,
+      2000
+    );
+    camera.position.set(0, 100, 300);
+    cameraRef.current = camera;
+
+    // Renderer
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.shadowMap.enabled = true;
+    containerRef.current.appendChild(renderer.domElement);
+    rendererRef.current = renderer;
+
+    // Controls
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.minDistance = 100;
+    controls.maxDistance = 500;
+    controls.maxPolarAngle = Math.PI / 1.5;
+    controls.target.set(0, 50, 0);
+    controlsRef.current = controls;
+
+    // Load FBX
+    const loader = new FBXLoader();
+    loader.load(
+      '/adzogbo-mocap.fbx',
+      (fbx) => {
+        fbx.scale.setScalar(1);
+        fbx.position.set(0, 0, 0);
+        
+        fbx.traverse((child) => {
+          if (child instanceof THREE.Mesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+            updateMeshMaterial(child, visualMode, phraseColor);
+          }
+        });
+
+        scene.add(fbx);
+        modelRef.current = fbx;
+
+        if (fbx.animations.length > 0) {
+          const mixer = new THREE.AnimationMixer(fbx);
+          const action = mixer.clipAction(fbx.animations[0]);
+          action.play();
+          mixerRef.current = mixer;
+        }
+
+        setLoadingStatus('loaded');
+      },
+      (progress) => {
+        if (progress.total > 0) {
+          const percent = (progress.loaded / progress.total) * 100;
+          setLoadingProgress(Math.round(percent));
+        }
+      },
+      (error) => {
+        console.error('FBX load error:', error);
+        setLoadingStatus('error');
+        createFallbackFigure(scene, phraseColor);
+      }
+    );
+
+    // Resize handler
+    const handleResize = () => {
+      if (!containerRef.current || !camera || !renderer) return;
+      camera.aspect = containerRef.current.clientWidth / containerRef.current.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight);
+    };
+    window.addEventListener('resize', handleResize);
+
+    // Animation loop
+    const animate = () => {
+      animationFrameRef.current = requestAnimationFrame(animate);
+      
+      const delta = clockRef.current.getDelta();
+      
+      if (mixerRef.current && isAnimating) {
+        mixerRef.current.timeScale = PHRASES[currentPhrase].animSpeed;
+        mixerRef.current.update(delta);
+      }
+      
+      if (controlsRef.current) {
+        controlsRef.current.update();
+      }
+      
+      if (rendererRef.current && sceneRef.current && cameraRef.current) {
+        rendererRef.current.render(sceneRef.current, cameraRef.current);
       }
     };
-  }, [activeSection, isAnimating, animate]);
+    animate();
 
-  // Enhanced binaural audio with multiple layers
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      if (rendererRef.current && containerRef.current) {
+        containerRef.current.removeChild(rendererRef.current.domElement);
+        rendererRef.current.dispose();
+      }
+    };
+  }, [currentPhrase, isAnimating, visualMode, createFallbackFigure, updateMeshMaterial]);
+
+  // Update materials when visual mode or phrase changes
+  useEffect(() => {
+    if (modelRef.current) {
+      const phraseColor = PHRASES[currentPhrase].color;
+      modelRef.current.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          updateMeshMaterial(child, visualMode, phraseColor);
+        }
+      });
+    }
+  }, [visualMode, currentPhrase, updateMeshMaterial]);
+
+  // Initialize Three.js when visual section is active
+  useEffect(() => {
+    if (activeSection === 'visual') {
+      const cleanup = initThreeJS();
+      return cleanup;
+    }
+  }, [activeSection, initThreeJS]);
+
+  // Reset camera position
+  const resetCamera = () => {
+    if (cameraRef.current && controlsRef.current) {
+      cameraRef.current.position.set(0, 100, 300);
+      controlsRef.current.target.set(0, 50, 0);
+      controlsRef.current.update();
+    }
+  };
+
+  // Camera presets
+  const setCameraPosition = (position: 'front' | 'back' | 'side' | 'top') => {
+    if (!cameraRef.current || !controlsRef.current) return;
+    
+    const positions = {
+      front: { x: 0, y: 100, z: 300 },
+      back: { x: 0, y: 100, z: -300 },
+      side: { x: 300, y: 100, z: 0 },
+      top: { x: 0, y: 400, z: 50 },
+    };
+    
+    const pos = positions[position];
+    cameraRef.current.position.set(pos.x, pos.y, pos.z);
+    controlsRef.current.target.set(0, 50, 0);
+    controlsRef.current.update();
+  };
+
+  // Enhanced binaural audio
   const startAudio = () => {
     if (audioContextRef.current) {
       stopAudio();
@@ -282,12 +336,10 @@ export default function TwoBodyProblem() {
     const mode = AUDIO_MODES[audioMode];
     const baseFreq = mode.baseFreq;
     
-    // Create master gain
     const masterGain = ctx.createGain();
     masterGain.gain.value = audioIntensity * 0.3;
     masterGain.connect(ctx.destination);
     
-    // Layer 1: Base tone with stereo pan
     const osc1 = ctx.createOscillator();
     const gain1 = ctx.createGain();
     const pan1 = ctx.createStereoPanner();
@@ -299,7 +351,6 @@ export default function TwoBodyProblem() {
     gain1.connect(pan1);
     pan1.connect(masterGain);
     
-    // Layer 2: Harmonic (fifth above) with inverse pan
     const osc2 = ctx.createOscillator();
     const gain2 = ctx.createGain();
     const pan2 = ctx.createStereoPanner();
@@ -311,7 +362,6 @@ export default function TwoBodyProblem() {
     gain2.connect(pan2);
     pan2.connect(masterGain);
     
-    // Layer 3: Sub-harmonic for depth
     const osc3 = ctx.createOscillator();
     const gain3 = ctx.createGain();
     const pan3 = ctx.createStereoPanner();
@@ -323,7 +373,6 @@ export default function TwoBodyProblem() {
     gain3.connect(pan3);
     pan3.connect(masterGain);
     
-    // Layer 4: Binaural beat (slightly detuned for each ear)
     const binauralBeatFreq = 4;
     const osc4L = ctx.createOscillator();
     const osc4R = ctx.createOscillator();
@@ -344,7 +393,6 @@ export default function TwoBodyProblem() {
     gain4R.connect(merger, 0, 1);
     merger.connect(masterGain);
     
-    // LFO for mode-specific movement
     const lfo = ctx.createOscillator();
     const lfoGain = ctx.createGain();
     lfo.type = 'sine';
@@ -359,7 +407,6 @@ export default function TwoBodyProblem() {
       lfoGain.gain.value = 50;
       lfo.connect(lfoGain);
       lfoGain.connect(osc1.frequency);
-      lfoGain.connect(osc2.frequency);
     } else if (audioMode === 'tension') {
       lfo.frequency.value = 0.3;
       lfoGain.gain.value = 20;
@@ -367,7 +414,6 @@ export default function TwoBodyProblem() {
       lfoGain.connect(osc2.frequency);
     }
     
-    // Start oscillators
     const now = ctx.currentTime;
     [osc1, osc2, osc3, osc4L, osc4R].forEach(osc => osc.start(now));
     lfo.start(now);
@@ -398,7 +444,6 @@ export default function TwoBodyProblem() {
     setIsPlaying(false);
   };
 
-  // Update panning in real-time
   useEffect(() => {
     pannersRef.current.forEach((panner, i) => {
       if (panner) {
@@ -408,7 +453,6 @@ export default function TwoBodyProblem() {
     });
   }, [audioPan]);
 
-  // Update intensity
   useEffect(() => {
     const masterGain = gainsRef.current[gainsRef.current.length - 1];
     if (masterGain) {
@@ -416,12 +460,10 @@ export default function TwoBodyProblem() {
     }
   }, [audioIntensity]);
 
-  // Cleanup audio
   useEffect(() => {
     return () => stopAudio();
   }, []);
 
-  // Restart audio when mode changes
   useEffect(() => {
     if (isPlaying) {
       stopAudio();
@@ -447,104 +489,163 @@ export default function TwoBodyProblem() {
           display: inline-block;
           font-family: 'JetBrains Mono', monospace;
           font-size: 0.65rem;
+          padding: 0.25rem 0.75rem;
+          background: rgba(232, 93, 4, 0.1);
+          color: var(--accent);
+          border-radius: 4px;
           text-transform: uppercase;
           letter-spacing: 0.1em;
-          padding: 0.35rem 0.65rem;
-          background: var(--accent);
-          color: white;
-          border-radius: 4px;
           margin-bottom: 1rem;
         }
 
         .page-title {
           font-family: 'Playfair Display', serif;
-          font-size: clamp(2rem, 4vw, 2.75rem);
-          font-weight: 600;
-          margin-bottom: 0.5rem;
+          font-size: 2.5rem;
+          font-weight: 700;
+          margin-bottom: 0.75rem;
+          color: var(--text-primary);
         }
 
         .page-subtitle {
-          font-size: 1rem;
+          font-size: 1.1rem;
           color: var(--text-secondary);
-          line-height: 1.6;
+          max-width: 600px;
         }
 
-        .seed-question {
-          font-family: 'Playfair Display', serif;
-          font-size: 1.5rem;
-          font-style: italic;
-          color: var(--accent);
-          text-align: center;
-          padding: 2rem;
-          background: var(--bg-secondary);
-          border: 1px solid var(--border);
+        .performance-image {
+          width: 100%;
           border-radius: 12px;
-          margin-bottom: 2rem;
+          margin: 1.5rem 0;
+          border: 1px solid var(--border);
         }
 
-        /* Tabs */
-        .tbp-tabs {
+        .image-caption {
+          font-size: 0.8rem;
+          color: var(--text-muted);
+          text-align: center;
+          margin-top: 0.5rem;
+          font-style: italic;
+        }
+
+        .download-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.75rem 1.25rem;
+          background: var(--bg-primary);
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          color: var(--text-primary);
+          text-decoration: none;
+          font-size: 0.85rem;
+          transition: all 0.2s ease;
+          margin-top: 1rem;
+        }
+
+        .download-btn:hover {
+          border-color: var(--accent);
+          background: rgba(232, 93, 4, 0.05);
+        }
+
+        .section-nav {
           display: flex;
           gap: 0.5rem;
           margin-bottom: 2rem;
           flex-wrap: wrap;
+          border-bottom: 1px solid var(--border);
+          padding-bottom: 1rem;
         }
 
-        .tbp-tab {
-          padding: 0.65rem 1.25rem;
+        .section-btn {
+          padding: 0.6rem 1.25rem;
           background: var(--bg-secondary);
           border: 1px solid var(--border);
-          border-radius: 6px;
-          font-size: 0.85rem;
-          font-weight: 500;
-          color: var(--text-secondary);
+          border-radius: 8px;
           cursor: pointer;
+          font-size: 0.85rem;
           transition: all 0.2s ease;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
         }
 
-        .tbp-tab:hover {
+        .section-btn:hover {
           border-color: var(--text-muted);
         }
 
-        .tbp-tab.active {
+        .section-btn.active {
           background: var(--accent);
           border-color: var(--accent);
           color: white;
         }
 
-        /* Content Sections */
-        .tbp-content {
-          background: var(--bg-secondary);
-          border: 1px solid var(--border);
-          border-radius: 12px;
-          padding: 2rem;
-        }
-
         .section-title {
           font-family: 'Playfair Display', serif;
-          font-size: 1.5rem;
-          font-weight: 600;
-          margin-bottom: 1rem;
+          font-size: 1.75rem;
+          margin-bottom: 0.75rem;
         }
 
         .section-intro {
           color: var(--text-secondary);
-          line-height: 1.7;
           margin-bottom: 1.5rem;
+          line-height: 1.6;
         }
 
-        /* Audio Section */
         .audio-container {
+          padding: 1.5rem;
+          background: var(--bg-secondary);
+          border-radius: 12px;
+          border: 1px solid var(--border);
+        }
+
+        .audio-modes {
+          margin-bottom: 1rem;
+        }
+
+        .mode-buttons {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 0.75rem;
+          margin-top: 0.75rem;
+        }
+
+        .mode-btn {
+          padding: 1rem;
           background: var(--bg-primary);
           border: 1px solid var(--border);
-          border-radius: 10px;
-          padding: 2rem;
-          text-align: center;
+          border-radius: 8px;
+          cursor: pointer;
+          text-align: left;
+          transition: all 0.2s ease;
+        }
+
+        .mode-btn:hover {
+          border-color: var(--text-muted);
+        }
+
+        .mode-btn.active {
+          border-color: var(--accent);
+          background: rgba(232, 93, 4, 0.08);
+        }
+
+        .mode-name {
+          display: block;
+          font-weight: 600;
+          font-size: 0.9rem;
+          margin-bottom: 0.25rem;
+        }
+
+        .mode-desc {
+          display: block;
+          font-size: 0.75rem;
+          color: var(--text-muted);
         }
 
         .pan-label {
           font-family: 'JetBrains Mono', monospace;
-          font-size: 0.8rem;
+          font-size: 0.7rem;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
           color: var(--text-muted);
           margin-bottom: 0.5rem;
         }
@@ -552,19 +653,16 @@ export default function TwoBodyProblem() {
         .pan-display {
           display: flex;
           align-items: center;
-          justify-content: center;
           gap: 1rem;
-          margin-bottom: 1.5rem;
+          justify-content: center;
         }
 
         .pan-side {
-          font-size: 0.9rem;
+          font-size: 0.85rem;
           font-weight: 600;
           width: 80px;
+          transition: color 0.2s ease;
         }
-
-        .pan-side.left { text-align: right; color: ${audioPan < 0 ? 'var(--accent)' : 'var(--text-muted)'}; }
-        .pan-side.right { text-align: left; color: ${audioPan > 0 ? 'var(--accent)' : 'var(--text-muted)'}; }
 
         .pan-slider {
           width: 200px;
@@ -609,51 +707,96 @@ export default function TwoBodyProblem() {
           font-style: italic;
         }
 
-        /* Audio Modes */
-        .audio-modes {
+        .visual-3d-container {
+          position: relative;
+          width: 100%;
+          height: 450px;
+          background: #0a0a0a;
+          border-radius: 12px;
+          overflow: hidden;
+          border: 1px solid var(--border);
+        }
+
+        .loading-overlay {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          background: rgba(10, 10, 10, 0.9);
+          z-index: 10;
+        }
+
+        .loading-text {
+          color: var(--accent);
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 0.85rem;
           margin-bottom: 1rem;
         }
 
-        .mode-buttons {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 0.75rem;
-          margin-top: 0.75rem;
+        .loading-bar {
+          width: 200px;
+          height: 4px;
+          background: var(--border);
+          border-radius: 2px;
+          overflow: hidden;
         }
 
-        .mode-btn {
+        .loading-bar-fill {
+          height: 100%;
+          background: var(--accent);
+          transition: width 0.3s ease;
+        }
+
+        .visual-controls-bar {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
           padding: 1rem;
-          background: var(--bg-primary);
-          border: 1px solid var(--border);
-          border-radius: 8px;
+          background: linear-gradient(transparent, rgba(0,0,0,0.8));
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          flex-wrap: wrap;
+          z-index: 5;
+        }
+
+        .control-label {
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 0.7rem;
+          color: rgba(255,255,255,0.6);
+          margin-right: 0.25rem;
+        }
+
+        .view-btn {
+          padding: 0.4rem 0.75rem;
+          background: rgba(255,255,255,0.1);
+          border: 1px solid rgba(255,255,255,0.2);
+          border-radius: 6px;
+          color: white;
+          font-size: 0.75rem;
           cursor: pointer;
-          text-align: left;
           transition: all 0.2s ease;
         }
 
-        .mode-btn:hover {
-          border-color: var(--text-muted);
+        .view-btn:hover {
+          background: rgba(255,255,255,0.2);
         }
 
-        .mode-btn.active {
+        .view-btn.active {
+          background: var(--accent);
           border-color: var(--accent);
-          background: rgba(232, 93, 4, 0.08);
         }
 
-        .mode-name {
-          display: block;
-          font-weight: 600;
-          font-size: 0.9rem;
-          margin-bottom: 0.25rem;
+        .spacer {
+          flex: 1;
         }
 
-        .mode-desc {
-          display: block;
-          font-size: 0.75rem;
-          color: var(--text-muted);
-        }
-
-        /* Phrase Selector */
         .phrase-selector {
           margin-bottom: 1.5rem;
         }
@@ -692,195 +835,66 @@ export default function TwoBodyProblem() {
           color: var(--text-muted);
         }
 
-        /* Tempo Slider */
-        .tempo-slider {
-          width: 80px;
-          height: 6px;
-          -webkit-appearance: none;
-          appearance: none;
-          background: var(--border);
-          border-radius: 3px;
-          outline: none;
-        }
-
-        .tempo-slider::-webkit-slider-thumb {
-          -webkit-appearance: none;
-          appearance: none;
-          width: 14px;
-          height: 14px;
-          background: var(--accent);
-          border-radius: 50%;
-          cursor: pointer;
-        }
-
-        .tempo-value {
-          font-family: 'JetBrains Mono', monospace;
-          font-size: 0.75rem;
+        .orbit-hint {
+          text-align: center;
+          font-size: 0.8rem;
           color: var(--text-muted);
-          min-width: 35px;
+          margin-top: 0.75rem;
         }
 
-        /* Phrase Info */
-        .phrase-info {
+        .overview-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 1rem;
           margin-top: 1.5rem;
+        }
+
+        .overview-card {
           padding: 1.25rem;
           background: var(--bg-primary);
+          border: 1px solid var(--border);
           border-radius: 10px;
-          border-left: 4px solid var(--accent);
         }
 
-        .phrase-info-header {
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
+        .overview-icon {
+          font-size: 1.5rem;
           margin-bottom: 0.5rem;
         }
 
-        .phrase-speed-badge {
-          font-family: 'JetBrains Mono', monospace;
-          font-size: 0.65rem;
-          padding: 0.2rem 0.5rem;
-          background: var(--border);
-          border-radius: 4px;
-          text-transform: uppercase;
-        }
-
-        /* Visual Section */
-        .visual-controls {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          margin-bottom: 1.5rem;
-          flex-wrap: wrap;
-        }
-
-        .control-label {
-          font-family: 'JetBrains Mono', monospace;
-          font-size: 0.75rem;
-          color: var(--text-muted);
-          margin-right: 0.5rem;
-        }
-
-        .style-btn {
-          padding: 0.5rem 1rem;
-          background: var(--bg-primary);
-          border: 1px solid var(--border);
-          border-radius: 6px;
-          font-size: 0.8rem;
-          cursor: pointer;
-          transition: all 0.2s ease;
-        }
-
-        .style-btn:hover {
-          border-color: var(--text-muted);
-        }
-
-        .style-btn.active {
-          background: var(--accent);
-          border-color: var(--accent);
-          color: white;
-        }
-
-        .visual-container {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 1rem;
-          margin-bottom: 1.5rem;
-        }
-
-        .vantage-view {
-          background: var(--bg-primary);
-          border: 1px solid var(--border);
-          border-radius: 10px;
-          padding: 1rem;
-          text-align: center;
-        }
-
-        .vantage-label {
-          font-family: 'JetBrains Mono', monospace;
-          font-size: 0.7rem;
-          text-transform: uppercase;
-          letter-spacing: 0.1em;
-          color: var(--text-muted);
-          margin-bottom: 0.75rem;
-        }
-
-        .motion-canvas {
-          background: var(--bg-secondary);
-          border-radius: 8px;
-          width: 100%;
-          max-width: 280px;
-          height: auto;
-        }
-
-        .vantage-note {
-          font-size: 0.75rem;
-          color: var(--accent);
-          margin-top: 0.75rem;
-          font-style: italic;
-        }
-
-        /* Process Section */
-        .process-flow {
-          display: flex;
-          flex-direction: column;
-          gap: 1rem;
-        }
-
-        .process-step {
-          display: flex;
-          gap: 1rem;
-          padding: 1.25rem;
-          background: var(--bg-primary);
-          border: 1px solid var(--border);
-          border-radius: 10px;
-          border-left: 4px solid var(--accent);
-        }
-
-        .step-number {
-          font-family: 'JetBrains Mono', monospace;
-          font-size: 1.25rem;
-          font-weight: 700;
-          color: var(--accent);
-          width: 30px;
-        }
-
-        .step-content {
-          flex: 1;
-        }
-
-        .step-title {
+        .overview-label {
           font-weight: 600;
-          margin-bottom: 0.35rem;
+          margin-bottom: 0.25rem;
         }
 
-        .step-desc {
+        .overview-value {
           font-size: 0.85rem;
           color: var(--text-secondary);
         }
 
-        /* Phrases */
         .phrases-grid {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
           gap: 1rem;
-          margin: 1.5rem 0;
+          margin-bottom: 2rem;
         }
 
         .phrase-card {
           padding: 1.25rem;
           background: var(--bg-primary);
-          border: 2px solid var(--border);
-          border-radius: 10px;
+          border: 1px solid var(--border);
+          border-left: 4px solid var(--accent);
+          border-radius: 0 10px 10px 0;
           cursor: pointer;
           transition: all 0.2s ease;
         }
 
         .phrase-card:hover {
           transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
         .phrase-card.active {
+          background: var(--bg-secondary);
           border-color: var(--accent);
         }
 
@@ -902,7 +916,48 @@ export default function TwoBodyProblem() {
           color: var(--text-muted);
         }
 
-        /* Reflection */
+        .process-flow {
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+        }
+
+        .process-step {
+          display: flex;
+          gap: 1rem;
+          padding: 1rem;
+          background: var(--bg-primary);
+          border-radius: 10px;
+          border: 1px solid var(--border);
+        }
+
+        .step-number {
+          width: 32px;
+          height: 32px;
+          background: var(--accent);
+          color: white;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 700;
+          flex-shrink: 0;
+        }
+
+        .step-content {
+          flex: 1;
+        }
+
+        .step-title {
+          font-weight: 600;
+          margin-bottom: 0.25rem;
+        }
+
+        .step-desc {
+          font-size: 0.85rem;
+          color: var(--text-secondary);
+        }
+
         .reflection-prompts {
           display: flex;
           flex-direction: column;
@@ -935,7 +990,6 @@ export default function TwoBodyProblem() {
           font-style: italic;
         }
 
-        /* Next Steps */
         .next-steps {
           display: grid;
           grid-template-columns: repeat(2, 1fr);
@@ -969,96 +1023,116 @@ export default function TwoBodyProblem() {
         }
 
         @media (max-width: 700px) {
-          .visual-container {
-            grid-template-columns: 1fr;
-          }
-
-          .phrases-grid {
+          .overview-grid,
+          .phrases-grid,
+          .phrase-buttons,
+          .mode-buttons {
             grid-template-columns: 1fr;
           }
 
           .next-steps {
             grid-template-columns: 1fr;
           }
+
+          .visual-3d-container {
+            height: 350px;
+          }
+
+          .visual-controls-bar {
+            padding: 0.75rem;
+          }
         }
       `}</style>
 
       <div className="page-header">
-        <div className="page-badge">Stage Lab</div>
-        <h1 className="page-title">Two Body Problem</h1>
+        <span className="page-badge">Stage Lab • MOD-001</span>
+        <h1 className="page-title">The Two Body Problem</h1>
         <p className="page-subtitle">
-          An exploration of duality in choreographic space. How does movement transform 
-          when viewed from opposing vantage points?
+          Initiating creative processes from a single seed idea. Two bodies, two vantage points, 
+          one question: What are we making today?
         </p>
+        
+        <a 
+          href="/class-1-planning.pdf" 
+          download="Class-1-Two-Body-Problem.pdf"
+          className="download-btn"
+        >
+          📄 Download Class Planning PDF
+        </a>
       </div>
 
-      <div className="seed-question">
-        "Feeling caught between two worlds"
-      </div>
-
-      <div className="tbp-tabs">
+      <nav className="section-nav">
         <button 
-          className={`tbp-tab ${activeSection === 'overview' ? 'active' : ''}`}
+          className={`section-btn ${activeSection === 'overview' ? 'active' : ''}`}
           onClick={() => setActiveSection('overview')}
         >
-          Overview
+          📋 Overview
         </button>
         <button 
-          className={`tbp-tab ${activeSection === 'audio' ? 'active' : ''}`}
+          className={`section-btn ${activeSection === 'audio' ? 'active' : ''}`}
           onClick={() => setActiveSection('audio')}
         >
-          🔊 Audio Experience
+          🔊 Audio
         </button>
         <button 
-          className={`tbp-tab ${activeSection === 'visual' ? 'active' : ''}`}
+          className={`section-btn ${activeSection === 'visual' ? 'active' : ''}`}
           onClick={() => setActiveSection('visual')}
         >
-          👁️ Visual Vantage
+          👁️ 3D Visual
         </button>
         <button 
-          className={`tbp-tab ${activeSection === 'process' ? 'active' : ''}`}
+          className={`section-btn ${activeSection === 'process' ? 'active' : ''}`}
           onClick={() => setActiveSection('process')}
         >
           📋 Process
         </button>
         <button 
-          className={`tbp-tab ${activeSection === 'reflection' ? 'active' : ''}`}
+          className={`section-btn ${activeSection === 'reflection' ? 'active' : ''}`}
           onClick={() => setActiveSection('reflection')}
         >
           💭 Reflection
         </button>
-      </div>
+      </nav>
 
-      <div className="tbp-content">
+      <div className="section-content">
         {activeSection === 'overview' && (
           <>
             <h2 className="section-title">The Two Body Problem</h2>
             <p className="section-intro">
-              In physics, the two-body problem asks how two objects move under their mutual gravitational pull. 
-              In choreography, we ask: how does a single movement exist differently when observed from two opposing sides? 
-              What is revealed? What is hidden? What transforms?
+              In physics, the two-body problem describes the motion of two bodies interacting only with each other. 
+              In choreography, we ask: how does a single question ("feeling caught between two worlds") generate 
+              movement that transforms based on where you stand?
             </p>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginTop: '1.5rem' }}>
-              <div style={{ padding: '1.25rem', background: 'var(--bg-primary)', border: '1px solid var(--border)', borderRadius: '10px' }}>
-                <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>🎯</div>
-                <div style={{ fontWeight: 600, marginBottom: '0.25rem' }}>Focus</div>
-                <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Initiating a creative process from a single seed idea</div>
+            <img 
+              src="/two-body-performance.jpg" 
+              alt="Performance with dancers among illuminated columns"
+              className="performance-image"
+            />
+            <p className="image-caption">
+              Two bodies navigating space — vantage points create meaning
+            </p>
+
+            <div className="overview-grid">
+              <div className="overview-card">
+                <div className="overview-icon">❓</div>
+                <div className="overview-label">Focus</div>
+                <div className="overview-value">Initiating creative processes from a single seed</div>
               </div>
-              <div style={{ padding: '1.25rem', background: 'var(--bg-primary)', border: '1px solid var(--border)', borderRadius: '10px' }}>
-                <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>📐</div>
-                <div style={{ fontWeight: 600, marginBottom: '0.25rem' }}>Space</div>
-                <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Rectangular, bi-focal seating on both ends</div>
+              <div className="overview-card">
+                <div className="overview-icon">📐</div>
+                <div className="overview-label">Space</div>
+                <div className="overview-value">Rectangular, bi-focal seating at both ends</div>
               </div>
-              <div style={{ padding: '1.25rem', background: 'var(--bg-primary)', border: '1px solid var(--border)', borderRadius: '10px' }}>
-                <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>👥</div>
-                <div style={{ fontWeight: 600, marginBottom: '0.25rem' }}>Bodies</div>
-                <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Two facing, center positioned</div>
+              <div className="overview-card">
+                <div className="overview-icon">👥</div>
+                <div className="overview-label">Bodies</div>
+                <div className="overview-value">Two facing, center positioned</div>
               </div>
-              <div style={{ padding: '1.25rem', background: 'var(--bg-primary)', border: '1px solid var(--border)', borderRadius: '10px' }}>
-                <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>🔄</div>
-                <div style={{ fontWeight: 600, marginBottom: '0.25rem' }}>Method</div>
-                <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Question → Process → Reflection</div>
+              <div className="overview-card">
+                <div className="overview-icon">🔄</div>
+                <div className="overview-label">Method</div>
+                <div className="overview-value">Question → Process → Reflection</div>
               </div>
             </div>
           </>
@@ -1069,12 +1143,10 @@ export default function TwoBodyProblem() {
             <h2 className="section-title">Audio: Two Perspectives</h2>
             <p className="section-intro">
               Sound, like movement, transforms based on position. This layered binaural soundscape 
-              demonstrates how the same sonic event exists differently depending on where you stand. 
-              Use headphones for the full spatial experience.
+              demonstrates how the same sonic event exists differently depending on where you stand.
             </p>
 
             <div className="audio-container">
-              {/* Mode Selector */}
               <div className="audio-modes">
                 <div className="pan-label">SOUND MODE</div>
                 <div className="mode-buttons">
@@ -1091,11 +1163,10 @@ export default function TwoBodyProblem() {
                 </div>
               </div>
 
-              {/* Spatial Position */}
               <div style={{ marginTop: '1.5rem' }}>
                 <div className="pan-label">SPATIAL POSITION</div>
                 <div className="pan-display">
-                  <span className="pan-side" style={{ color: audioPan < 0 ? 'var(--accent)' : 'var(--text-muted)' }}>← LEFT</span>
+                  <span className="pan-side" style={{ color: audioPan < 0 ? 'var(--accent)' : 'var(--text-muted)', textAlign: 'right' }}>← LEFT</span>
                   <input 
                     type="range" 
                     className="pan-slider"
@@ -1109,11 +1180,10 @@ export default function TwoBodyProblem() {
                 </div>
               </div>
 
-              {/* Intensity */}
               <div style={{ marginTop: '1rem' }}>
                 <div className="pan-label">INTENSITY</div>
                 <div className="pan-display">
-                  <span className="pan-side">Soft</span>
+                  <span className="pan-side" style={{ textAlign: 'right' }}>Soft</span>
                   <input 
                     type="range" 
                     className="pan-slider"
@@ -1127,17 +1197,17 @@ export default function TwoBodyProblem() {
                 </div>
               </div>
               
-              <button 
-                className="audio-btn"
-                onClick={isPlaying ? stopAudio : startAudio}
-                style={{ marginTop: '1.5rem' }}
-              >
-                {isPlaying ? '■ Stop' : '▶ Play'}
-              </button>
+              <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+                <button 
+                  className="audio-btn"
+                  onClick={isPlaying ? stopAudio : startAudio}
+                >
+                  {isPlaying ? '■ Stop' : '▶ Play'}
+                </button>
+              </div>
               
               <p className="audio-note">
-                🎧 Best experienced with headphones. Multiple harmonic layers create a rich spatial field 
-                that shifts as you move between vantage points.
+                🎧 Best experienced with headphones. Multiple harmonic layers create a rich spatial field.
               </p>
             </div>
 
@@ -1145,7 +1215,7 @@ export default function TwoBodyProblem() {
               <strong style={{ display: 'block', marginBottom: '0.5rem' }}>Choreographic Question:</strong>
               <span style={{ color: 'var(--text-secondary)' }}>
                 If your movement phrase were a sound, would both vantage points hear the same rhythm? 
-                The same intensity? The same silence? What harmonics emerge from different positions?
+                The same intensity? The same silence?
               </span>
             </div>
           </>
@@ -1153,13 +1223,12 @@ export default function TwoBodyProblem() {
 
         {activeSection === 'visual' && (
           <>
-            <h2 className="section-title">Visual: Bi-Focal Vantage</h2>
+            <h2 className="section-title">3D Visual: Bi-Focal Vantage</h2>
             <p className="section-intro">
-              The same figure, the same movement, observed from opposing ends. Select a phrase to see 
-              how its unique movement qualities appear differently from each vantage point.
+              Orbit around the motion capture figure to experience how the same movement appears differently 
+              from each vantage point. Drag to rotate, scroll to zoom, right-click to pan.
             </p>
 
-            {/* Phrase Selector */}
             <div className="phrase-selector">
               <span className="control-label">Movement Phrase:</span>
               <div className="phrase-buttons">
@@ -1180,85 +1249,63 @@ export default function TwoBodyProblem() {
               </div>
             </div>
 
-            {/* Controls Row */}
-            <div className="visual-controls">
-              <span className="control-label">Style:</span>
-              <button 
-                className={`style-btn ${visualStyle === 'skeletal' ? 'active' : ''}`}
-                onClick={() => setVisualStyle('skeletal')}
-              >
-                Skeletal
-              </button>
-              <button 
-                className={`style-btn ${visualStyle === 'silhouette' ? 'active' : ''}`}
-                onClick={() => setVisualStyle('silhouette')}
-              >
-                Silhouette
-              </button>
-              <button 
-                className={`style-btn ${visualStyle === 'hybrid' ? 'active' : ''}`}
-                onClick={() => setVisualStyle('hybrid')}
-              >
-                Hybrid
-              </button>
+            <div className="visual-3d-container" ref={containerRef}>
+              {loadingStatus === 'loading' && (
+                <div className="loading-overlay">
+                  <div className="loading-text">Loading Motion Capture Data...</div>
+                  <div className="loading-bar">
+                    <div className="loading-bar-fill" style={{ width: `${loadingProgress}%` }}></div>
+                  </div>
+                </div>
+              )}
               
-              <span className="control-label" style={{ marginLeft: '1.5rem' }}>Tempo:</span>
-              <input 
-                type="range" 
-                className="tempo-slider"
-                min="0.3" 
-                max="2" 
-                step="0.1"
-                value={tempoMultiplier}
-                onChange={(e) => setTempoMultiplier(parseFloat(e.target.value))}
-              />
-              <span className="tempo-value">{tempoMultiplier.toFixed(1)}x</span>
-
-              <button 
-                className={`style-btn ${isAnimating ? 'active' : ''}`}
-                onClick={() => setIsAnimating(!isAnimating)}
-                style={{ marginLeft: 'auto' }}
-              >
-                {isAnimating ? '⏸ Pause' : '▶ Play'}
-              </button>
-            </div>
-
-            <div className="visual-container">
-              <div className="vantage-view">
-                <div className="vantage-label">Vantage Point A — Front</div>
-                <canvas 
-                  ref={canvasLeftRef} 
-                  width={280} 
-                  height={240}
-                  className="motion-canvas"
-                />
-                <div className="vantage-note" style={{ color: PHRASES[currentPhrase].color }}>
-                  Face • Expression • Intention
-                </div>
-              </div>
-
-              <div className="vantage-view">
-                <div className="vantage-label">Vantage Point B — Back</div>
-                <canvas 
-                  ref={canvasRightRef} 
-                  width={280} 
-                  height={240}
-                  className="motion-canvas"
-                />
-                <div className="vantage-note" style={{ color: PHRASES[currentPhrase].color }}>
-                  Spine • Vulnerability • Departure
-                </div>
+              <div className="visual-controls-bar">
+                <span className="control-label">Vantage:</span>
+                <button className="view-btn" onClick={() => setCameraPosition('front')}>Front</button>
+                <button className="view-btn" onClick={() => setCameraPosition('back')}>Back</button>
+                <button className="view-btn" onClick={() => setCameraPosition('side')}>Side</button>
+                <button className="view-btn" onClick={() => setCameraPosition('top')}>Top</button>
+                
+                <div className="spacer"></div>
+                
+                <span className="control-label">Style:</span>
+                <button 
+                  className={`view-btn ${visualMode === 'wireframe' ? 'active' : ''}`}
+                  onClick={() => setVisualMode('wireframe')}
+                >
+                  Wireframe
+                </button>
+                <button 
+                  className={`view-btn ${visualMode === 'solid' ? 'active' : ''}`}
+                  onClick={() => setVisualMode('solid')}
+                >
+                  Solid
+                </button>
+                <button 
+                  className={`view-btn ${visualMode === 'points' ? 'active' : ''}`}
+                  onClick={() => setVisualMode('points')}
+                >
+                  Points
+                </button>
+                
+                <button 
+                  className={`view-btn ${isAnimating ? 'active' : ''}`}
+                  onClick={() => setIsAnimating(!isAnimating)}
+                >
+                  {isAnimating ? '⏸' : '▶'}
+                </button>
+                <button className="view-btn" onClick={resetCamera}>Reset</button>
               </div>
             </div>
 
-            <div className="phrase-info" style={{ borderLeftColor: PHRASES[currentPhrase].color }}>
-              <div className="phrase-info-header">
-                <strong>{PHRASES[currentPhrase].name}</strong>
-                <span className="phrase-speed-badge">{PHRASES[currentPhrase].speed}</span>
-              </div>
-              <p>{PHRASES[currentPhrase].desc}</p>
+            <p className="orbit-hint">
+              🖱️ Drag to orbit • Scroll to zoom • Right-click to pan — Experience the vantage point transformation
+            </p>
+
+            <div style={{ marginTop: '1.5rem', padding: '1.25rem', background: 'var(--bg-primary)', borderRadius: '10px', borderLeft: `4px solid ${PHRASES[currentPhrase].color}` }}>
+              <strong>{PHRASES[currentPhrase].name}</strong> — {PHRASES[currentPhrase].desc}
               <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                The Two Body Problem: Same movement, same moment, different truths.
+                Motion capture: Adzogbo danced by Mustapha — Ghanaian tradition from the Global Movement Research corpus.
               </p>
             </div>
           </>
@@ -1299,21 +1346,21 @@ export default function TwoBodyProblem() {
                 <div className="step-number">2</div>
                 <div className="step-content">
                   <div className="step-title">Develop 3 Sequential Phrases</div>
-                  <div className="step-desc">Each phrase is distinct and repeatable. Characterize by speed and tempo. Consider: tension, release, resolution.</div>
+                  <div className="step-desc">Each phrase is distinct and repeatable. Characterize by speed, tempo, and vantage point relationship.</div>
                 </div>
               </div>
               <div className="process-step">
                 <div className="step-number">3</div>
                 <div className="step-content">
-                  <div className="step-title">Repeat Each Phrase 3 Times</div>
-                  <div className="step-desc">Each repetition is modulated. Change facing, scale, timing, or relationship to the vantage points.</div>
+                  <div className="step-title">Repeat with Modulation</div>
+                  <div className="step-desc">Perform each phrase 3 times, modulating each repetition. What changes? What stays?</div>
                 </div>
               </div>
               <div className="process-step">
                 <div className="step-number">4</div>
                 <div className="step-content">
                   <div className="step-title">Apply Creator Viewpoint</div>
-                  <div className="step-desc">Move around the phrase as it is performed. Ask: What does it look like? How does it feel?</div>
+                  <div className="step-desc">Move around the phrase as it's performed. What does it look like? How does it feel?</div>
                 </div>
               </div>
             </div>
@@ -1324,29 +1371,29 @@ export default function TwoBodyProblem() {
           <>
             <h2 className="section-title">Reflection</h2>
             <p className="section-intro">
-              The seed idea has transformed from question to application. Now we reflect on the journey.
+              The seed idea has transformed from question to application. Consider these prompts 
+              to process your experience.
             </p>
 
             <div className="reflection-prompts">
               <div className="reflection-prompt">
                 <div className="prompt-question">What was asked?</div>
-                <div className="prompt-hint">Return to the original seed: "Feeling caught between two worlds"</div>
+                <div className="prompt-hint">Return to the original seed: "feeling caught between two worlds"</div>
               </div>
               <div className="reflection-prompt">
                 <div className="prompt-question">What was made?</div>
-                <div className="prompt-hint">Describe the movement material that emerged from the process</div>
+                <div className="prompt-hint">Describe the movement material that emerged</div>
               </div>
               <div className="reflection-prompt">
                 <div className="prompt-question">How was it made?</div>
-                <div className="prompt-hint">Document your process, decisions, and discoveries</div>
+                <div className="prompt-hint">Trace the process from question to phrase to performance</div>
               </div>
               <div className="reflection-prompt">
                 <div className="prompt-question">What was the process?</div>
-                <div className="prompt-hint">Did you follow the structure? Where did you deviate? Why?</div>
+                <div className="prompt-hint">Identify your methodology — what can be repeated, modified, extended?</div>
               </div>
             </div>
 
-            <h3 style={{ marginTop: '2rem', marginBottom: '1rem', fontFamily: "'Playfair Display', serif" }}>Next Steps</h3>
             <div className="next-steps">
               <div className="next-step-btn">
                 <div className="next-step-icon">🔨</div>

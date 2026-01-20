@@ -1,7 +1,21 @@
 import { useState } from 'react';
+import { NavLink } from 'react-router-dom';
 
 export default function Labs() {
   const [activeLab, setActiveLab] = useState<'stage' | 'film'>('stage');
+
+  const stageModules = [
+    {
+      id: 'two-body-problem',
+      title: 'Two Body Problem',
+      desc: 'Exploring duality and bi-focal vantage points',
+      date: 'Week 2',
+      status: 'active',
+      path: '/labs/two-body-problem'
+    }
+  ];
+
+  const filmModules: typeof stageModules = [];
 
   return (
     <div className="labs-page">
@@ -68,7 +82,7 @@ export default function Labs() {
           background: var(--bg-secondary);
           border: 1px solid var(--border);
           border-radius: 12px;
-          min-height: 400px;
+          min-height: 300px;
         }
 
         .lab-header {
@@ -104,8 +118,86 @@ export default function Labs() {
         }
 
         .lab-body {
-          padding: 3rem 2rem;
+          padding: 2rem;
+        }
+
+        /* Module Cards */
+        .modules-grid {
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+        }
+
+        .module-card {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 1.25rem 1.5rem;
+          background: var(--bg-primary);
+          border: 1px solid var(--border);
+          border-radius: 10px;
+          text-decoration: none;
+          color: inherit;
+          transition: all 0.2s ease;
+        }
+
+        .module-card:hover {
+          border-color: var(--accent);
+          transform: translateX(4px);
+        }
+
+        .module-info {
+          flex: 1;
+        }
+
+        .module-title {
+          font-weight: 600;
+          font-size: 1.1rem;
+          margin-bottom: 0.25rem;
+        }
+
+        .module-desc {
+          font-size: 0.85rem;
+          color: var(--text-secondary);
+        }
+
+        .module-meta {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+        }
+
+        .module-date {
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 0.7rem;
+          color: var(--text-muted);
+        }
+
+        .module-status {
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 0.65rem;
+          padding: 0.25rem 0.5rem;
+          background: var(--accent);
+          color: white;
+          border-radius: 4px;
+          text-transform: uppercase;
+        }
+
+        .module-arrow {
+          font-size: 1.25rem;
+          color: var(--text-muted);
+          transition: all 0.2s ease;
+        }
+
+        .module-card:hover .module-arrow {
+          color: var(--accent);
+          transform: translateX(4px);
+        }
+
+        /* Empty State */
+        .empty-state {
           text-align: center;
+          padding: 3rem 2rem;
         }
 
         .empty-state-icon {
@@ -127,33 +219,12 @@ export default function Labs() {
           margin: 0 auto;
           line-height: 1.6;
         }
-
-        /* Schedule */
-        .lab-schedule {
-          margin-top: 2rem;
-          padding-top: 2rem;
-          border-top: 1px dashed var(--border);
-        }
-
-        .schedule-title {
-          font-family: 'JetBrains Mono', monospace;
-          font-size: 0.7rem;
-          text-transform: uppercase;
-          letter-spacing: 0.1em;
-          color: var(--text-muted);
-          margin-bottom: 1rem;
-        }
-
-        .schedule-info {
-          font-size: 0.85rem;
-          color: var(--text-secondary);
-        }
       `}</style>
 
       <div className="page-header">
         <h1 className="page-title">Labs</h1>
         <p className="page-subtitle">
-          Ongoing workspace for class activities. Labs are updated throughout the semester as we work together.
+          Ongoing workspace for class explorations. Labs are updated throughout the semester as we work together.
         </p>
       </div>
 
@@ -178,28 +249,56 @@ export default function Labs() {
             <span className="lab-icon">{activeLab === 'stage' ? '🎭' : '🎬'}</span>
             {activeLab === 'stage' ? 'Stage Lab' : 'Film Lab'}
           </h2>
-          <span className="lab-status">In Development</span>
+          <span className="lab-status">{activeLab === 'stage' && stageModules.length > 0 ? 'Active' : 'In Development'}</span>
         </div>
 
         <div className="lab-body">
-          <div className="empty-state-icon">🔬</div>
-          <div className="empty-state-title">Lab materials coming soon</div>
-          <div className="empty-state-desc">
-            {activeLab === 'stage' 
-              ? 'Stage Lab content will be added as we progress through the semester. Check back after our first showings.'
-              : 'Film Lab content will be added as we progress through the semester. Check back after our first showings.'
-            }
-          </div>
-
-          <div className="lab-schedule">
-            <div className="schedule-title">Lab Sessions</div>
-            <div className="schedule-info">
-              {activeLab === 'stage' 
-                ? 'Tuesdays and Thursdays with AET collaborators'
-                : 'Tuesdays and Thursdays with AET collaborators'
-              }
+          {activeLab === 'stage' && stageModules.length > 0 ? (
+            <div className="modules-grid">
+              {stageModules.map((module) => (
+                <NavLink key={module.id} to={module.path} className="module-card">
+                  <div className="module-info">
+                    <div className="module-title">{module.title}</div>
+                    <div className="module-desc">{module.desc}</div>
+                  </div>
+                  <div className="module-meta">
+                    <span className="module-date">{module.date}</span>
+                    <span className="module-status">{module.status}</span>
+                    <span className="module-arrow">→</span>
+                  </div>
+                </NavLink>
+              ))}
             </div>
-          </div>
+          ) : activeLab === 'film' && filmModules.length > 0 ? (
+            <div className="modules-grid">
+              {filmModules.map((module) => (
+                <NavLink key={module.id} to={module.path} className="module-card">
+                  <div className="module-info">
+                    <div className="module-title">{module.title}</div>
+                    <div className="module-desc">{module.desc}</div>
+                  </div>
+                  <div className="module-meta">
+                    <span className="module-date">{module.date}</span>
+                    <span className="module-status">{module.status}</span>
+                    <span className="module-arrow">→</span>
+                  </div>
+                </NavLink>
+              ))}
+            </div>
+          ) : (
+            <div className="empty-state">
+              <div className="empty-state-icon">🔬</div>
+              <div className="empty-state-title">
+                {activeLab === 'film' ? 'Film Lab modules coming soon' : 'No modules yet'}
+              </div>
+              <div className="empty-state-desc">
+                {activeLab === 'stage' 
+                  ? 'Stage Lab content will be added as we progress through the semester.'
+                  : 'Film Lab content will be added as we progress through the semester.'
+                }
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -11,6 +11,7 @@ import Books from './pages/Books';
 import StageDesigns from './pages/StageDesigns';
 import FilmTrack from './pages/FilmTrack';
 import StudyLab from './pages/StudyLab';
+import TwoBodyProblem from './pages/TwoBodyProblem';
 
 function SignInPage() {
   return (
@@ -43,6 +44,7 @@ export default function App() {
             <Route path="tracks/stage" element={<Tracks />} />
             <Route path="tracks/film" element={<FilmTrack />} />
             <Route path="labs" element={<Labs />} />
+            <Route path="labs/two-body-problem" element={<TwoBodyProblem />} />
             <Route path="timeline" element={<Timeline />} />
             <Route path="resources" element={<Resources />} />
             <Route path="resources/stage-designs" element={<StageDesigns />} />

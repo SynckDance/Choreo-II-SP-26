@@ -147,9 +147,9 @@ export default function TwoBodyProblem() {
     scene.background = new THREE.Color(0x0a0a0a);
     sceneRef.current = scene;
 
-    // Grid
-    const gridHelper = new THREE.GridHelper(200, 20, 0xE85D04, 0x333333);
-    gridHelper.position.y = -50;
+    // Grid at ground level
+    const gridHelper = new THREE.GridHelper(400, 40, 0xE85D04, 0x333333);
+    gridHelper.position.y = 0;
     scene.add(gridHelper);
 
     // Lights
@@ -173,9 +173,9 @@ export default function TwoBodyProblem() {
       45,
       containerRef.current.clientWidth / containerRef.current.clientHeight,
       1,
-      2000
+      5000
     );
-    camera.position.set(0, 100, 300);
+    camera.position.set(0, 75, 250);
     cameraRef.current = camera;
 
     // Renderer
@@ -190,10 +190,10 @@ export default function TwoBodyProblem() {
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
-    controls.minDistance = 100;
-    controls.maxDistance = 500;
+    controls.minDistance = 50;
+    controls.maxDistance = 800;
     controls.maxPolarAngle = Math.PI / 1.5;
-    controls.target.set(0, 50, 0);
+    controls.target.set(0, 75, 0);
     controlsRef.current = controls;
 
     // Load FBX
@@ -201,8 +201,20 @@ export default function TwoBodyProblem() {
     loader.load(
       '/adzogbo-mocap.fbx',
       (fbx) => {
-        fbx.scale.setScalar(1);
-        fbx.position.set(0, 0, 0);
+        // Compute bounding box to center the model
+        const box = new THREE.Box3().setFromObject(fbx);
+        const center = box.getCenter(new THREE.Vector3());
+        const size = box.getSize(new THREE.Vector3());
+        
+        // Center the model
+        fbx.position.x = -center.x;
+        fbx.position.y = -box.min.y; // Place feet on ground
+        fbx.position.z = -center.z;
+        
+        // Scale to fit nicely (target ~150 units tall)
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const scale = 150 / maxDim;
+        fbx.scale.setScalar(scale);
         
         fbx.traverse((child) => {
           if (child instanceof THREE.Mesh) {
@@ -302,8 +314,8 @@ export default function TwoBodyProblem() {
   // Reset camera position
   const resetCamera = () => {
     if (cameraRef.current && controlsRef.current) {
-      cameraRef.current.position.set(0, 100, 300);
-      controlsRef.current.target.set(0, 50, 0);
+      cameraRef.current.position.set(0, 75, 250);
+      controlsRef.current.target.set(0, 75, 0);
       controlsRef.current.update();
     }
   };
@@ -313,15 +325,15 @@ export default function TwoBodyProblem() {
     if (!cameraRef.current || !controlsRef.current) return;
     
     const positions = {
-      front: { x: 0, y: 100, z: 300 },
-      back: { x: 0, y: 100, z: -300 },
-      side: { x: 300, y: 100, z: 0 },
-      top: { x: 0, y: 400, z: 50 },
+      front: { x: 0, y: 75, z: 250 },
+      back: { x: 0, y: 75, z: -250 },
+      side: { x: 250, y: 75, z: 0 },
+      top: { x: 0, y: 300, z: 50 },
     };
     
     const pos = positions[position];
     cameraRef.current.position.set(pos.x, pos.y, pos.z);
-    controlsRef.current.target.set(0, 50, 0);
+    controlsRef.current.target.set(0, 75, 0);
     controlsRef.current.update();
   };
 

@@ -75,7 +75,7 @@ const TONE_EXAMPLES = [
 ];
 
 export default function CollaborationLab() {
-  const [activeSection, setActiveSection] = useState<'overview' | 'entering' | 'navigating' | 'lab' | 'exiting' | 'templates'>('overview');
+  const [activeSection, setActiveSection] = useState<'overview' | 'entering' | 'navigating' | 'lab' | 'exiting' | 'templates' | 'coach'>('overview');
   const [selectedRole, setSelectedRole] = useState<RoleKey | null>(null);
   const [activePhase, setActivePhase] = useState<'enter' | 'navigate' | 'exit'>('enter');
   const [languageInput, setLanguageInput] = useState('');
@@ -87,6 +87,12 @@ export default function CollaborationLab() {
   const [newTension, setNewTension] = useState('');
   const [contract, setContract] = useState({ question: '', protect: '', openTo: '', pauseSignal: '' });
   const tensionIdRef = useRef(0);
+
+  // AI Coach state
+  const [coachQuery, setCoachQuery] = useState('');
+  const [coachInput, setCoachInput] = useState('');
+  const [coachLoading, setCoachLoading] = useState(false);
+  const [coachMessages, setCoachMessages] = useState<Array<{ role: 'user' | 'assistant'; content: string }>>([]);
 
   // Language translation
   const translateLanguage = async () => {
@@ -124,6 +130,95 @@ export default function CollaborationLab() {
     setTensions(tensions.filter(t => t.id !== id));
   };
 
+  // AI Coach - System prompt with course philosophy
+  const COACH_SYSTEM_PROMPT = `You are the Collaboration Coach for Choreography II at UT Austin, taught by Professor Sinclair Emoghene. You support students as they navigate artistic collaborations with dancers, composers, designers, and technical partners.
+
+CORE PHILOSOPHY (from the course):
+- "Evolution is a collaboration, not a commission"
+- Artist-centered approach: non-authoritative, collaborative method that places the student's artistic growth at the center
+- Feedback is for REFLECTION, not correction
+- Support autonomy, nurture curiosity, strengthen artistic voice
+- You do NOT shape their work into any vision — you help them discover their own
+- Culture of risk: mistakes and breakthroughs both matter
+
+YOUR APPROACH:
+- Respond with curiosity rather than judgment
+- Help students navigate self-critique without doing the critique for them
+- Ask questions that open thinking, not questions that lead to "right" answers
+- When students are stuck, help them identify what they already know
+- Support the emotional complexity of creative work
+- Be warm but direct — no empty validation
+
+LIZ LERMAN'S CRITICAL RESPONSE PROCESS (use when giving feedback):
+1. Statements of Meaning — What was meaningful, surprising, memorable?
+2. Artist as Questioner — What questions does the artist have?
+3. Neutral Questions — Responders ask neutral (non-judgmental) questions
+4. Permission Options — "I have an opinion about X, would you like to hear it?"
+
+COLLABORATION FRAMEWORKS:
+- ENTER: Prepare, Question, Listen — How you arrive shapes everything
+- NAVIGATE: Respond, Adjust, Protect — Hold intention while staying open
+- EXIT: Reflect, Document, Rest — How you leave determines how you return
+
+IMPACT LANGUAGE (help students reframe directive statements):
+- Instead of "Make it louder" → "I'm imagining more presence — what would that feel like?"
+- Instead of "That's not working" → "Something feels unresolved — can we explore?"
+- Instead of "Do it faster" → "What happens if we compress the time?"
+
+COLLABORATOR ROLES:
+- Dancers: Need clear vocabulary, space for interpretation, safety. Use body-based language.
+- Composers: Need artistic intention, flexibility, references. Use sensory language (texture, weight).
+- Designers: Need early concepts, visual references, budget clarity. Communicate visually.
+- Technical: Need advance notice, clear cues, respect for time. Be specific and practical.
+
+WHAT YOU DON'T DO:
+- Don't give artistic direction or tell them what their piece should be
+- Don't solve their creative problems — help them find their own solutions
+- Don't judge their artistic choices
+- Don't replace human mentorship (encourage them to talk to Prof. Emoghene or TA Annie)
+
+COURSE CONTEXT:
+- Students are creating 6-10 minute works for EVOLUTION (April 23, 2026)
+- Two tracks: Concert Dance (Stage) and Dance on Film
+- They collaborate with AET music composers
+- Key texts: Jonathan Burrows "A Choreographer's Handbook", Liz Lerman's Critical Response Process, Tomie Hahn's "Sensational Knowledge"
+
+Keep responses concise (2-3 paragraphs max). Be genuinely helpful, not performatively supportive.`;
+
+  const askCoach = async () => {
+    if (!coachInput.trim() || coachLoading) return;
+    
+    const userMessage = coachInput.trim();
+    setCoachInput('');
+    setCoachLoading(true);
+    
+    const newMessages = [...coachMessages, { role: 'user' as const, content: userMessage }];
+    setCoachMessages(newMessages);
+    
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          system: COACH_SYSTEM_PROMPT,
+          messages: newMessages.map(m => ({ role: m.role, content: m.content })),
+        }),
+      });
+      
+      const data = await response.json();
+      const assistantContent = data.content?.[0]?.text || "I'm having trouble responding right now. Please try again.";
+      
+      setCoachMessages([...newMessages, { role: 'assistant', content: assistantContent }]);
+    } catch (error) {
+      console.error('Coach error:', error);
+      setCoachMessages([...newMessages, { role: 'assistant', content: "Unable to connect right now. Try again in a moment, or reach out to Prof. Emoghene or TA Annie directly." }]);
+    }
+    
+    setCoachLoading(false);
+  };
+
   const getEnergyReadiness = () => {
     const avg = (energyCheck.clarity + energyCheck.openness + energyCheck.body) / 3;
     if (avg >= 4) return { level: 'Ready', color: '#10B981', message: 'You are centered and prepared.' };
@@ -132,6 +227,117 @@ export default function CollaborationLab() {
   };
 
   const energyReadiness = getEnergyReadiness();
+
+  // AI Coach system prompt
+  const COACH_SYSTEM_PROMPT = `You are the Collaboration Coach for Choreography II at UT Austin, taught by Professor Sinclair Emoghene. You support undergraduate dance students as they navigate artistic collaborations with dancers, composers (from AET), designers, and technical partners.
+
+COURSE PHILOSOPHY:
+- "Evolution is a collaboration, not a commission" — students work WITH collaborators, not directing them
+- Artist-centered approach: non-authoritative, collaborative, placing students' artistic growth at the center
+- Feedback supports reflection, not correction
+- This is a laboratory for experimentation, questions, and discovery
+- "You are not here to replicate. You are here to create. From which you evolve."
+- Core areas: Making, Collaborating, Producing, Performing, Leadership/Ownership, Culture of Risk
+
+COLLABORATION FRAMEWORKS YOU TEACH:
+
+1. THE THREE PHASES:
+- ENTER: Prepare, Question, Listen — How you arrive shapes everything
+- NAVIGATE: Respond, Adjust, Protect — Balance openness with artistic core
+- EXIT: Reflect, Document, Rest — How you leave determines how you return
+
+2. THE COLLABORATION COMPASS (roles students work with):
+- Dancers: Need clear vocabulary, space for interpretation, safety. Communicate with body-based language.
+- Composers (AET): Need clear intention, flexibility, reference materials. Use sensory language (texture, weight, atmosphere).
+- Designers: Need early concepts, visual references, budget clarity. Bring images, sketches, videos.
+- Technical Partners: Need advance notice, clear cue sheets, respect for time. Be specific and practical.
+
+3. IMPACT LANGUAGE (transform directive → collaborative):
+- "Make it louder" → "I'm imagining more presence — what would that feel like?"
+- "That's not working" → "Something feels unresolved — can we explore alternatives?"
+- "Do it faster" → "What happens if we compress the time between moments?"
+- "I don't like that" → "I'm not connecting yet — help me understand your intention?"
+
+4. LIZ LERMAN'S CRITICAL RESPONSE PROCESS:
+- Step 1: Statements of Meaning (what was meaningful, surprising, evocative)
+- Step 2: Artist as Questioner (artist asks what they want to know)
+- Step 3: Neutral Questions from Responders (questions without opinions embedded)
+- Step 4: Permission Opinions (responders ask permission before offering opinions)
+
+5. TENSION MAPPING:
+- Tensions are information, not problems
+- Map on two axes: Artistic ↔ Interpersonal, Urgent ↔ Can Wait
+- Separate emotional discomfort from artistic misalignment
+
+6. SELF-CARE IN PROCESS:
+- Collaboration can feel extractive or disorienting
+- Daily check-ins, permission to pause, body-care practices
+- Exit without emotional residue
+
+COURSE TEXTS (reference when relevant):
+- "A Choreographer's Handbook" by Jonathan Burrows — on process, rules, negotiation
+- Liz Lerman's Critical Response Process — structured feedback method
+- Tomie Hahn's "Sensational Knowledge" — embodied knowledge, transmission
+
+YOUR COACHING STYLE:
+- Warm, supportive, but direct
+- Ask questions that help students find their own answers
+- Never give artistic direction — help them clarify their own vision
+- Offer practical strategies they can use immediately
+- Acknowledge the emotional complexity of creative work
+- Encourage risk-taking while supporting self-protection
+- Keep responses concise (2-3 paragraphs max unless they ask for more)
+- Reference course frameworks when relevant
+- Help them prepare language for difficult conversations
+
+IMPORTANT BOUNDARIES:
+- You don't make artistic decisions for them
+- You don't tell them what their work should be about
+- You help them articulate what THEY want
+- You support their autonomy as emerging choreographers
+- If they need logistical help (booking studios, deadlines), direct them to the TA Annie or Prof. Emoghene
+
+TIMELINE CONTEXT:
+- Performance: EVOLUTION on April 23, 2026
+- Tech rehearsals: April 6-10 (groups), April 20-22 (all)
+- Key deadlines: Collaborative Partnership (1/29), Mid-Semester Showing (3/5), Final Design (3/24), Final Studio Showing (4/16)`;
+
+  // AI Coach query handler
+  const askCoach = async () => {
+    if (!coachInput.trim() || coachLoading) return;
+    
+    const userMessage = coachInput.trim();
+    setCoachInput('');
+    setCoachLoading(true);
+    
+    const newMessages = [...coachMessages, { role: 'user' as const, content: userMessage }];
+    setCoachMessages(newMessages);
+    
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          system: COACH_SYSTEM_PROMPT,
+          messages: newMessages.map(m => ({ role: m.role, content: m.content })),
+        }),
+      });
+      
+      const data = await response.json();
+      const assistantMessage = data.content?.[0]?.text || 'I\'m having trouble responding right now. Please try again.';
+      
+      setCoachMessages([...newMessages, { role: 'assistant', content: assistantMessage }]);
+    } catch (error) {
+      console.error('Coach error:', error);
+      setCoachMessages([...newMessages, { role: 'assistant', content: 'Unable to connect right now. Please try again in a moment.' }]);
+    }
+    
+    setCoachLoading(false);
+  };
 
   return (
     <div className="collab-page">
@@ -270,6 +476,32 @@ export default function CollaborationLab() {
         .template-btn { display: inline-block; padding: 0.5rem 1rem; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary); text-decoration: none; font-size: 0.8rem; transition: all 0.2s ease; }
         .template-btn:hover { border-color: #10B981; background: rgba(16, 185, 129, 0.1); }
 
+        /* AI Coach */
+        .coach-container { background: var(--bg-primary); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin: 1.5rem 0; }
+        .coach-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
+        .coach-avatar { width: 50px; height: 50px; background: linear-gradient(135deg, #10B981, #6366F1); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+        .coach-info h3 { margin: 0 0 0.25rem 0; font-size: 1.1rem; }
+        .coach-info p { margin: 0; font-size: 0.8rem; color: var(--text-muted); }
+        .coach-messages { max-height: 400px; overflow-y: auto; margin-bottom: 1rem; display: flex; flex-direction: column; gap: 1rem; }
+        .coach-message { padding: 1rem 1.25rem; border-radius: 12px; font-size: 0.9rem; line-height: 1.6; max-width: 85%; }
+        .coach-message.user { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); align-self: flex-end; }
+        .coach-message.assistant { background: var(--bg-secondary); border: 1px solid var(--border); align-self: flex-start; }
+        .coach-input-row { display: flex; gap: 0.75rem; }
+        .coach-input { flex: 1; padding: 0.875rem 1rem; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; background: var(--bg-secondary); color: var(--text-primary); resize: none; font-family: inherit; }
+        .coach-input:focus { outline: none; border-color: #10B981; }
+        .coach-send-btn { padding: 0.875rem 1.5rem; background: linear-gradient(135deg, #10B981, #059669); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+        .coach-send-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
+        .coach-send-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+        .coach-suggestions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+        .coach-suggestion { padding: 0.5rem 0.875rem; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 20px; font-size: 0.8rem; cursor: pointer; transition: all 0.2s ease; }
+        .coach-suggestion:hover { border-color: #10B981; background: rgba(16, 185, 129, 0.05); }
+        .coach-empty { text-align: center; padding: 3rem 2rem; color: var(--text-muted); }
+        .coach-empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+        .coach-frameworks { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 1.5rem; }
+        .coach-framework { padding: 1rem; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; }
+        .coach-framework h4 { font-size: 0.85rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+        .coach-framework p { font-size: 0.8rem; color: var(--text-secondary); margin: 0; }
+
         .overview-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1.5rem 0; }
         .overview-card { padding: 1.25rem; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 10px; text-align: center; }
         .overview-icon { font-size: 2rem; margin-bottom: 0.5rem; }
@@ -289,11 +521,12 @@ export default function CollaborationLab() {
         @media (max-width: 768px) {
           .compass-container { flex-direction: column; }
           .compass-visual { margin: 0 auto; }
-          .phase-prompts, .examples-grid, .tone-cards, .templates-grid, .overview-grid { grid-template-columns: 1fr; }
+          .phase-prompts, .examples-grid, .tone-cards, .templates-grid, .overview-grid, .coach-frameworks { grid-template-columns: 1fr; }
           .phase-timeline { flex-direction: column; gap: 1.5rem; }
           .phase-timeline::before { display: none; }
           .energy-slider-row { flex-direction: column; align-items: flex-start; }
           .energy-label { width: 100%; }
+          .coach-message { max-width: 95%; }
         }
       `}</style>
 
@@ -311,7 +544,7 @@ export default function CollaborationLab() {
       </div>
 
       <nav className="section-nav">
-        {(['overview', 'entering', 'navigating', 'lab', 'exiting', 'templates'] as const).map((section) => (
+        {(['overview', 'entering', 'navigating', 'lab', 'exiting', 'templates', 'coach'] as const).map((section) => (
           <button 
             key={section}
             className={`section-btn ${activeSection === section ? 'active' : ''}`}
@@ -322,8 +555,9 @@ export default function CollaborationLab() {
             {section === 'navigating' && '🧭'} 
             {section === 'lab' && '🔬'} 
             {section === 'exiting' && '🚶'} 
-            {section === 'templates' && '📁'} 
-            {section.charAt(0).toUpperCase() + section.slice(1)}
+            {section === 'templates' && '📁'}
+            {section === 'coach' && '🤖'}
+            {section === 'coach' ? ' AI Coach' : ` ${section.charAt(0).toUpperCase() + section.slice(1)}`}
           </button>
         ))}
       </nav>
@@ -662,6 +896,125 @@ export default function CollaborationLab() {
               <div className="template-desc">Full extended technical study for this lab.</div>
               <a href="/collaboration-extended-study.md" download className="template-btn">Download</a>
             </div>
+          </div>
+        </>
+      )}
+
+      {activeSection === 'coach' && (
+        <>
+          <h2 className="section-title">AI Collaboration Coach</h2>
+          <p className="section-intro">
+            Your thinking partner for navigating collaborative challenges. Ask questions, practice language, 
+            prepare for difficult conversations, or reflect on what happened in a session.
+          </p>
+
+          <div className="coach-container">
+            <div className="coach-header">
+              <div className="coach-avatar">🎭</div>
+              <div className="coach-info">
+                <h3>Collaboration Coach</h3>
+                <p>Trained on course frameworks • Artist-centered approach</p>
+              </div>
+            </div>
+
+            <div className="coach-messages">
+              {coachMessages.length === 0 ? (
+                <div className="coach-empty">
+                  <div className="coach-empty-icon">💬</div>
+                  <p>Ask me anything about collaboration, language, process, or reflection.</p>
+                  <p style={{ fontSize: '0.8rem', marginTop: '0.5rem' }}>I'm here to help you think — not to tell you what to make.</p>
+                </div>
+              ) : (
+                coachMessages.map((msg, i) => (
+                  <div key={i} className={`coach-message ${msg.role}`}>
+                    {msg.content}
+                  </div>
+                ))
+              )}
+              {coachLoading && (
+                <div className="coach-message assistant" style={{ fontStyle: 'italic', opacity: 0.7 }}>
+                  Thinking...
+                </div>
+              )}
+            </div>
+
+            <div className="coach-input-row">
+              <textarea
+                className="coach-input"
+                rows={2}
+                placeholder="Ask about collaboration, language, process, or reflection..."
+                value={coachInput}
+                onChange={(e) => setCoachInput(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    askCoach();
+                  }
+                }}
+              />
+              <button 
+                className="coach-send-btn" 
+                onClick={askCoach}
+                disabled={coachLoading || !coachInput.trim()}
+              >
+                {coachLoading ? '...' : 'Ask'}
+              </button>
+            </div>
+
+            <div className="coach-suggestions">
+              {[
+                "How do I tell my composer their music isn't working?",
+                "My dancer keeps changing the choreography",
+                "I feel like I'm losing my artistic voice",
+                "How do I prepare for a difficult feedback session?",
+                "What's the difference between transforming and abandoning an idea?",
+                "Help me reframe this note I want to give",
+              ].map((suggestion, i) => (
+                <button
+                  key={i}
+                  className="coach-suggestion"
+                  onClick={() => setCoachInput(suggestion)}
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <h3 style={{ marginTop: '2rem', marginBottom: '1rem' }}>Frameworks I Know</h3>
+          <div className="coach-frameworks">
+            <div className="coach-framework">
+              <h4>🚪 Enter → Navigate → Exit</h4>
+              <p>The three phases of collaboration and how to move through them with intention.</p>
+            </div>
+            <div className="coach-framework">
+              <h4>🧭 Collaboration Compass</h4>
+              <p>Understanding dancers, composers, designers, and technical partners.</p>
+            </div>
+            <div className="coach-framework">
+              <h4>💬 Impact Language</h4>
+              <p>Transforming directive notes into collaborative conversation.</p>
+            </div>
+            <div className="coach-framework">
+              <h4>📋 Critical Response Process</h4>
+              <p>Liz Lerman's four-step method for giving and receiving feedback.</p>
+            </div>
+            <div className="coach-framework">
+              <h4>🗺️ Tension Mapping</h4>
+              <p>Understanding tensions as information, not problems.</p>
+            </div>
+            <div className="coach-framework">
+              <h4>💜 Self-Care in Process</h4>
+              <p>Protecting your energy and exiting without emotional residue.</p>
+            </div>
+          </div>
+
+          <div style={{ marginTop: '2rem', padding: '1.25rem', background: 'rgba(99, 102, 241, 0.08)', borderRadius: '12px', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>
+              <strong style={{ color: '#6366F1' }}>Note:</strong> This coach helps you think through collaboration challenges — 
+              it won't make artistic decisions for you. For logistical questions (studio booking, deadlines, requirements), 
+              please reach out to <strong>Annie (TA)</strong> or <strong>Prof. Emoghene</strong>.
+            </p>
           </div>
         </>
       )}

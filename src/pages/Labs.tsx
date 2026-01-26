@@ -10,8 +10,16 @@ export default function Labs() {
       title: 'Two Body Problem',
       desc: 'Exploring duality and bi-focal vantage points',
       date: 'Week 2',
-      status: 'active',
+      status: 'complete',
       path: '/labs/two-body-problem'
+    },
+    {
+      id: 'collaboration',
+      title: 'The Art of Effective Collaboration',
+      desc: 'Enter, navigate, and exit collaborations with clarity and integrity',
+      date: 'Week 3',
+      status: 'active',
+      path: '/labs/collaboration'
     }
   ];
 

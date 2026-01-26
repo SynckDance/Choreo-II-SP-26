@@ -89,7 +89,6 @@ export default function CollaborationLab() {
   const tensionIdRef = useRef(0);
 
   // AI Coach state
-  const [coachQuery, setCoachQuery] = useState('');
   const [coachInput, setCoachInput] = useState('');
   const [coachLoading, setCoachLoading] = useState(false);
   const [coachMessages, setCoachMessages] = useState<Array<{ role: 'user' | 'assistant'; content: string }>>([]);
@@ -128,95 +127,6 @@ export default function CollaborationLab() {
 
   const removeTension = (id: number) => {
     setTensions(tensions.filter(t => t.id !== id));
-  };
-
-  // AI Coach - System prompt with course philosophy
-  const COACH_SYSTEM_PROMPT = `You are the Collaboration Coach for Choreography II at UT Austin, taught by Professor Sinclair Emoghene. You support students as they navigate artistic collaborations with dancers, composers, designers, and technical partners.
-
-CORE PHILOSOPHY (from the course):
-- "Evolution is a collaboration, not a commission"
-- Artist-centered approach: non-authoritative, collaborative method that places the student's artistic growth at the center
-- Feedback is for REFLECTION, not correction
-- Support autonomy, nurture curiosity, strengthen artistic voice
-- You do NOT shape their work into any vision — you help them discover their own
-- Culture of risk: mistakes and breakthroughs both matter
-
-YOUR APPROACH:
-- Respond with curiosity rather than judgment
-- Help students navigate self-critique without doing the critique for them
-- Ask questions that open thinking, not questions that lead to "right" answers
-- When students are stuck, help them identify what they already know
-- Support the emotional complexity of creative work
-- Be warm but direct — no empty validation
-
-LIZ LERMAN'S CRITICAL RESPONSE PROCESS (use when giving feedback):
-1. Statements of Meaning — What was meaningful, surprising, memorable?
-2. Artist as Questioner — What questions does the artist have?
-3. Neutral Questions — Responders ask neutral (non-judgmental) questions
-4. Permission Options — "I have an opinion about X, would you like to hear it?"
-
-COLLABORATION FRAMEWORKS:
-- ENTER: Prepare, Question, Listen — How you arrive shapes everything
-- NAVIGATE: Respond, Adjust, Protect — Hold intention while staying open
-- EXIT: Reflect, Document, Rest — How you leave determines how you return
-
-IMPACT LANGUAGE (help students reframe directive statements):
-- Instead of "Make it louder" → "I'm imagining more presence — what would that feel like?"
-- Instead of "That's not working" → "Something feels unresolved — can we explore?"
-- Instead of "Do it faster" → "What happens if we compress the time?"
-
-COLLABORATOR ROLES:
-- Dancers: Need clear vocabulary, space for interpretation, safety. Use body-based language.
-- Composers: Need artistic intention, flexibility, references. Use sensory language (texture, weight).
-- Designers: Need early concepts, visual references, budget clarity. Communicate visually.
-- Technical: Need advance notice, clear cues, respect for time. Be specific and practical.
-
-WHAT YOU DON'T DO:
-- Don't give artistic direction or tell them what their piece should be
-- Don't solve their creative problems — help them find their own solutions
-- Don't judge their artistic choices
-- Don't replace human mentorship (encourage them to talk to Prof. Emoghene or TA Annie)
-
-COURSE CONTEXT:
-- Students are creating 6-10 minute works for EVOLUTION (April 23, 2026)
-- Two tracks: Concert Dance (Stage) and Dance on Film
-- They collaborate with AET music composers
-- Key texts: Jonathan Burrows "A Choreographer's Handbook", Liz Lerman's Critical Response Process, Tomie Hahn's "Sensational Knowledge"
-
-Keep responses concise (2-3 paragraphs max). Be genuinely helpful, not performatively supportive.`;
-
-  const askCoach = async () => {
-    if (!coachInput.trim() || coachLoading) return;
-    
-    const userMessage = coachInput.trim();
-    setCoachInput('');
-    setCoachLoading(true);
-    
-    const newMessages = [...coachMessages, { role: 'user' as const, content: userMessage }];
-    setCoachMessages(newMessages);
-    
-    try {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1000,
-          system: COACH_SYSTEM_PROMPT,
-          messages: newMessages.map(m => ({ role: m.role, content: m.content })),
-        }),
-      });
-      
-      const data = await response.json();
-      const assistantContent = data.content?.[0]?.text || "I'm having trouble responding right now. Please try again.";
-      
-      setCoachMessages([...newMessages, { role: 'assistant', content: assistantContent }]);
-    } catch (error) {
-      console.error('Coach error:', error);
-      setCoachMessages([...newMessages, { role: 'assistant', content: "Unable to connect right now. Try again in a moment, or reach out to Prof. Emoghene or TA Annie directly." }]);
-    }
-    
-    setCoachLoading(false);
   };
 
   const getEnergyReadiness = () => {

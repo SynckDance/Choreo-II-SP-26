@@ -2,8 +2,8 @@ import { useState } from 'react';
 
 const weeklySchedule = [
   { week: 1, dates: 'Jan 13, 15', topic: 'Course Overview + Tour B. Iden Payne Theatre with Jeff Grapko and AET', assignment: null },
-  { week: 2, dates: 'Jan 20, 22', topic: 'Stage/Film + Lab Time with AET', assignment: null },
-  { week: 3, dates: 'Jan 27, 29', topic: 'Stage/Film + Lab Time with AET', assignment: { name: 'Collaborative Partnership', due: '01/29', points: 5 } },
+  { week: 2, dates: 'Jan 20, 22', topic: 'Two Body Problem + Lab Time with AET', assignment: null },
+  { week: 3, dates: 'Jan 27, 29', topic: 'Art of Collaboration + Lab Time with AET', assignment: { name: 'Collaborative Partnership', due: '01/29', points: 5 } },
   { week: 4, dates: 'Feb 3, 5', topic: 'Stage/Film + Lab Time with AET', assignment: null },
   { week: 5, dates: 'Feb 10, 12', topic: 'Stage/Film + Lab Time with AET', assignment: null },
   { week: 6, dates: 'Feb 17, 19', topic: 'Stage/Film + Lab Time with AET', assignment: null },
@@ -12,11 +12,11 @@ const weeklySchedule = [
   { week: 9, dates: 'Mar 10, 12', topic: 'Stage/Film + Lab Time with AET', assignment: null },
   { week: 10, dates: 'Mar 17, 19', topic: 'SPRING BREAK', assignment: null, isBreak: true },
   { week: 11, dates: 'Mar 24, 26', topic: 'Showings - Stage/Film + Lab Time', assignment: { name: 'Final Design Submission', due: '03/24', points: 10 } },
-  { week: 12, dates: 'Mar 31', topic: 'Showings - Stage/Film', assignment: null },
-  { week: 13, dates: 'Apr 2', topic: 'Lab Time with AET (Review)', assignment: null },
-  { week: 14, dates: 'Apr 7, 9', topic: 'Stage/Film + Lab Time', assignment: null },
-  { week: 15, dates: 'Apr 14, 16', topic: 'Final Showings - Performance Prep', assignment: { name: 'Final Studio Showing', due: '04/16', points: 10 } },
-  { week: 16, dates: 'Apr 21, 23', topic: 'Final Exam Week - EVOLUTION Apr 24', assignment: null, isFinal: true },
+  { week: 12, dates: 'Mar 31, Apr 2', topic: 'Showings - Stage/Film + Lab Time', assignment: null },
+  { week: 13, dates: 'Apr 7, 9', topic: 'Tech Rehearsals Begin (Groups 1-9)', assignment: null },
+  { week: 14, dates: 'Apr 14, 16', topic: 'Final Showings - Performance Prep', assignment: { name: 'Final Studio Showing', due: '04/16', points: 10 } },
+  { week: 15, dates: 'Apr 20, 22', topic: 'Production Week - Tech/Dress Rehearsals', assignment: null },
+  { week: 16, dates: 'Apr 23', topic: 'EVOLUTION Performance', assignment: null, isFinal: true },
 ];
 
 const techSchedule = [
@@ -29,12 +29,12 @@ const techSchedule = [
   { date: 'Apr 9', day: 'Thu', event: 'Group 7 Tech Rehearsal', time: '6:30-9:30pm' },
   { date: 'Apr 10', day: 'Fri', event: 'Group 8 Tech Rehearsal', time: '3:30-6:30pm' },
   { date: 'Apr 10', day: 'Fri', event: 'Group 9 Tech Rehearsal', time: '6:30-9:30pm' },
-  { date: 'Apr 21', day: 'Mon', event: 'Restore + LX Focus', time: '2:00-5:00pm' },
-  { date: 'Apr 22', day: 'Tue', event: 'Restore + LX Focus', time: '2:00-5:00pm' },
-  { date: 'Apr 22', day: 'Tue', event: 'ALL Tech Rehearsal', time: '7:00-10:00pm' },
-  { date: 'Apr 23', day: 'Wed', event: 'ALL Dress Rehearsal', time: '7:00-10:00pm' },
-  { date: 'Apr 24', day: 'Thu', event: 'EVOLUTION Performance', time: '7:00-10:00pm', highlight: true },
-  { date: 'Apr 25', day: 'Fri', event: 'Strike', time: '9:00am-5:00pm' },
+  { date: 'Apr 20', day: 'Mon', event: 'Restore + LX Focus', time: '2:00-5:00pm' },
+  { date: 'Apr 21', day: 'Tue', event: 'Restore + LX Focus', time: '2:00-5:00pm' },
+  { date: 'Apr 21', day: 'Tue', event: 'ALL Tech Rehearsal', time: '7:00-10:00pm' },
+  { date: 'Apr 22', day: 'Wed', event: 'ALL Dress Rehearsal', time: '7:00-10:00pm' },
+  { date: 'Apr 23', day: 'Thu', event: 'EVOLUTION Performance', time: '7:30pm', highlight: true },
+  { date: 'Apr 24', day: 'Fri', event: 'Strike', time: '9:00am-12:00pm' },
 ];
 
 export default function Timeline() {

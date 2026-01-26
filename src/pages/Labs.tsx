@@ -18,6 +18,14 @@ export default function Labs() {
   // General Studies - applies to both Stage and Film tracks
   const generalModules: Module[] = [
     {
+      id: 'two-body-problem',
+      title: 'Two Body Problem',
+      desc: 'Exploring duality and bi-focal vantage points',
+      date: 'Week 2',
+      status: 'complete',
+      path: '/labs/two-body-problem'
+    },
+    {
       id: 'collaboration',
       title: 'The Art of Effective Collaboration',
       desc: 'Enter, navigate, and exit collaborations with clarity and integrity',
@@ -28,16 +36,7 @@ export default function Labs() {
   ];
 
   // Stage Lab - specific to concert dance / live performance
-  const stageModules: Module[] = [
-    {
-      id: 'two-body-problem',
-      title: 'Two Body Problem',
-      desc: 'Exploring duality and bi-focal vantage points in live performance',
-      date: 'Week 2',
-      status: 'complete',
-      path: '/labs/two-body-problem'
-    }
-  ];
+  const stageModules: Module[] = [];
 
   // Film Lab - specific to dance on film
   const filmModules: Module[] = [];

@@ -1,18 +1,22 @@
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 
-export default function Labs() {
-  const [activeLab, setActiveLab] = useState<'stage' | 'film'>('stage');
+type LabTab = 'general' | 'stage' | 'film';
 
-  const stageModules = [
-    {
-      id: 'two-body-problem',
-      title: 'Two Body Problem',
-      desc: 'Exploring duality and bi-focal vantage points',
-      date: 'Week 2',
-      status: 'complete',
-      path: '/labs/two-body-problem'
-    },
+interface Module {
+  id: string;
+  title: string;
+  desc: string;
+  date: string;
+  status: 'active' | 'complete' | 'upcoming';
+  path: string;
+}
+
+export default function Labs() {
+  const [activeLab, setActiveLab] = useState<LabTab>('general');
+
+  // General Studies - applies to both Stage and Film tracks
+  const generalModules: Module[] = [
     {
       id: 'collaboration',
       title: 'The Art of Effective Collaboration',
@@ -23,7 +27,63 @@ export default function Labs() {
     }
   ];
 
-  const filmModules: typeof stageModules = [];
+  // Stage Lab - specific to concert dance / live performance
+  const stageModules: Module[] = [
+    {
+      id: 'two-body-problem',
+      title: 'Two Body Problem',
+      desc: 'Exploring duality and bi-focal vantage points in live performance',
+      date: 'Week 2',
+      status: 'complete',
+      path: '/labs/two-body-problem'
+    }
+  ];
+
+  // Film Lab - specific to dance on film
+  const filmModules: Module[] = [];
+
+  const getModules = () => {
+    switch (activeLab) {
+      case 'general': return generalModules;
+      case 'stage': return stageModules;
+      case 'film': return filmModules;
+    }
+  };
+
+  const getLabInfo = () => {
+    switch (activeLab) {
+      case 'general': 
+        return { 
+          icon: '📚', 
+          title: 'General Studies', 
+          desc: 'Core frameworks and skills for all choreographers — applicable to both stage and film work.'
+        };
+      case 'stage': 
+        return { 
+          icon: '🎭', 
+          title: 'Stage Lab', 
+          desc: 'Explorations specific to concert dance and live performance.'
+        };
+      case 'film': 
+        return { 
+          icon: '🎬', 
+          title: 'Film Lab', 
+          desc: 'Explorations specific to dance on film and screen-based work.'
+        };
+    }
+  };
+
+  const modules = getModules();
+  const labInfo = getLabInfo();
+
+  const getStatusStyle = (status: string) => {
+    switch (status) {
+      case 'active': return { background: '#10B981' };
+      case 'complete': return { background: 'var(--text-muted)' };
+      case 'upcoming': return { background: '#6366F1' };
+      default: return {};
+    }
+  };
 
   return (
     <div className="labs-page">
@@ -34,7 +94,7 @@ export default function Labs() {
         }
 
         .page-header {
-          margin-bottom: 3rem;
+          margin-bottom: 2rem;
         }
 
         .page-title {
@@ -61,7 +121,7 @@ export default function Labs() {
         }
 
         .lab-tab {
-          padding: 0.75rem 1.5rem;
+          padding: 0.75rem 1.25rem;
           background: transparent;
           border: none;
           font-size: 0.9rem;
@@ -70,6 +130,9 @@ export default function Labs() {
           cursor: pointer;
           border-radius: 6px 6px 0 0;
           transition: all 0.2s ease;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
         }
 
         .lab-tab:hover {
@@ -85,6 +148,18 @@ export default function Labs() {
           margin-bottom: -1px;
         }
 
+        .lab-tab.general.active {
+          color: #10B981;
+        }
+
+        .lab-tab.stage.active {
+          color: #E85D04;
+        }
+
+        .lab-tab.film.active {
+          color: #6366F1;
+        }
+
         /* Lab Content */
         .lab-content {
           background: var(--bg-secondary);
@@ -94,16 +169,20 @@ export default function Labs() {
         }
 
         .lab-header {
-          padding: 2rem;
+          padding: 1.75rem 2rem;
           border-bottom: 1px solid var(--border);
+        }
+
+        .lab-header-top {
           display: flex;
           align-items: center;
           justify-content: space-between;
+          margin-bottom: 0.5rem;
         }
 
         .lab-title {
           font-family: 'Playfair Display', serif;
-          font-size: 1.5rem;
+          font-size: 1.4rem;
           font-weight: 600;
           display: flex;
           align-items: center;
@@ -111,7 +190,7 @@ export default function Labs() {
         }
 
         .lab-icon {
-          font-size: 1.5rem;
+          font-size: 1.4rem;
         }
 
         .lab-status {
@@ -123,6 +202,12 @@ export default function Labs() {
           border-radius: 4px;
           text-transform: uppercase;
           letter-spacing: 0.05em;
+        }
+
+        .lab-desc {
+          font-size: 0.9rem;
+          color: var(--text-secondary);
+          max-width: 500px;
         }
 
         .lab-body {
@@ -160,7 +245,7 @@ export default function Labs() {
 
         .module-title {
           font-weight: 600;
-          font-size: 1.1rem;
+          font-size: 1.05rem;
           margin-bottom: 0.25rem;
         }
 
@@ -172,7 +257,7 @@ export default function Labs() {
         .module-meta {
           display: flex;
           align-items: center;
-          gap: 1rem;
+          gap: 0.75rem;
         }
 
         .module-date {
@@ -185,7 +270,6 @@ export default function Labs() {
           font-family: 'JetBrains Mono', monospace;
           font-size: 0.65rem;
           padding: 0.25rem 0.5rem;
-          background: var(--accent);
           color: white;
           border-radius: 4px;
           text-transform: uppercase;
@@ -227,6 +311,38 @@ export default function Labs() {
           margin: 0 auto;
           line-height: 1.6;
         }
+
+        /* Module count badge */
+        .module-count {
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 0.65rem;
+          padding: 0.15rem 0.4rem;
+          background: var(--border);
+          border-radius: 10px;
+          color: var(--text-muted);
+        }
+
+        @media (max-width: 600px) {
+          .lab-selector {
+            flex-wrap: wrap;
+          }
+
+          .lab-tab {
+            padding: 0.6rem 1rem;
+            font-size: 0.85rem;
+          }
+
+          .module-card {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+          }
+
+          .module-meta {
+            width: 100%;
+            justify-content: flex-start;
+          }
+        }
       `}</style>
 
       <div className="page-header">
@@ -238,32 +354,46 @@ export default function Labs() {
 
       <div className="lab-selector">
         <button
-          className={`lab-tab ${activeLab === 'stage' ? 'active' : ''}`}
+          className={`lab-tab general ${activeLab === 'general' ? 'active' : ''}`}
+          onClick={() => setActiveLab('general')}
+        >
+          📚 General Studies
+          {generalModules.length > 0 && <span className="module-count">{generalModules.length}</span>}
+        </button>
+        <button
+          className={`lab-tab stage ${activeLab === 'stage' ? 'active' : ''}`}
           onClick={() => setActiveLab('stage')}
         >
           🎭 Stage Lab
+          {stageModules.length > 0 && <span className="module-count">{stageModules.length}</span>}
         </button>
         <button
-          className={`lab-tab ${activeLab === 'film' ? 'active' : ''}`}
+          className={`lab-tab film ${activeLab === 'film' ? 'active' : ''}`}
           onClick={() => setActiveLab('film')}
         >
           🎬 Film Lab
+          {filmModules.length > 0 && <span className="module-count">{filmModules.length}</span>}
         </button>
       </div>
 
       <div className="lab-content">
         <div className="lab-header">
-          <h2 className="lab-title">
-            <span className="lab-icon">{activeLab === 'stage' ? '🎭' : '🎬'}</span>
-            {activeLab === 'stage' ? 'Stage Lab' : 'Film Lab'}
-          </h2>
-          <span className="lab-status">{activeLab === 'stage' && stageModules.length > 0 ? 'Active' : 'In Development'}</span>
+          <div className="lab-header-top">
+            <h2 className="lab-title">
+              <span className="lab-icon">{labInfo.icon}</span>
+              {labInfo.title}
+            </h2>
+            <span className="lab-status">
+              {modules.length > 0 ? `${modules.length} Module${modules.length > 1 ? 's' : ''}` : 'Coming Soon'}
+            </span>
+          </div>
+          <p className="lab-desc">{labInfo.desc}</p>
         </div>
 
         <div className="lab-body">
-          {activeLab === 'stage' && stageModules.length > 0 ? (
+          {modules.length > 0 ? (
             <div className="modules-grid">
-              {stageModules.map((module) => (
+              {modules.map((module) => (
                 <NavLink key={module.id} to={module.path} className="module-card">
                   <div className="module-info">
                     <div className="module-title">{module.title}</div>
@@ -271,23 +401,9 @@ export default function Labs() {
                   </div>
                   <div className="module-meta">
                     <span className="module-date">{module.date}</span>
-                    <span className="module-status">{module.status}</span>
-                    <span className="module-arrow">→</span>
-                  </div>
-                </NavLink>
-              ))}
-            </div>
-          ) : activeLab === 'film' && filmModules.length > 0 ? (
-            <div className="modules-grid">
-              {filmModules.map((module) => (
-                <NavLink key={module.id} to={module.path} className="module-card">
-                  <div className="module-info">
-                    <div className="module-title">{module.title}</div>
-                    <div className="module-desc">{module.desc}</div>
-                  </div>
-                  <div className="module-meta">
-                    <span className="module-date">{module.date}</span>
-                    <span className="module-status">{module.status}</span>
+                    <span className="module-status" style={getStatusStyle(module.status)}>
+                      {module.status}
+                    </span>
                     <span className="module-arrow">→</span>
                   </div>
                 </NavLink>
@@ -297,13 +413,12 @@ export default function Labs() {
             <div className="empty-state">
               <div className="empty-state-icon">🔬</div>
               <div className="empty-state-title">
-                {activeLab === 'film' ? 'Film Lab modules coming soon' : 'No modules yet'}
+                {activeLab === 'film' ? 'Film Lab modules coming soon' : 'Modules coming soon'}
               </div>
               <div className="empty-state-desc">
-                {activeLab === 'stage' 
-                  ? 'Stage Lab content will be added as we progress through the semester.'
-                  : 'Film Lab content will be added as we progress through the semester.'
-                }
+                {activeLab === 'general' && 'General studies content will be added as we progress through the semester.'}
+                {activeLab === 'stage' && 'Stage-specific explorations will be added as we progress through the semester.'}
+                {activeLab === 'film' && 'Film-specific explorations will be added as we progress through the semester.'}
               </div>
             </div>
           )}

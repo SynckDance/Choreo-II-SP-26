@@ -12,6 +12,15 @@ interface Module {
   path: string;
 }
 
+interface Resource {
+  id: string;
+  title: string;
+  desc: string;
+  url: string;
+  tags: string[];
+  icon: string;
+}
+
 export default function Labs() {
   const [activeLab, setActiveLab] = useState<LabTab>('general');
   
@@ -52,6 +61,42 @@ export default function Labs() {
 
   // Film Lab - specific to dance on film
   const filmModules: Module[] = [];
+
+  // Film Lab Resources
+  const filmResources: Resource[] = [
+    {
+      id: 'numeridanse',
+      title: 'Numeridanse',
+      desc: 'Free international dance video library with 800+ dance films, documentaries, and performances. Every genre represented.',
+      url: 'https://numeridanse.com/en/publication/category/dance-films/',
+      tags: ['Watch', 'Research', 'Free'],
+      icon: '🎬'
+    },
+    {
+      id: 'dancefilmmaking',
+      title: 'Dance Filmmaking',
+      desc: 'The #1 online hub for dance films and screendance. Curated films from around the world plus educational resources.',
+      url: 'https://www.dancefilmmaking.com',
+      tags: ['Watch', 'Learn', 'Submit'],
+      icon: '🎥'
+    },
+    {
+      id: 'masterclass',
+      title: 'Dance Filmmaking Masterclass',
+      desc: 'Comprehensive course on conceptualization, cinematography, and editing. Create professional dance films on any budget.',
+      url: 'https://masterclass.dancefilmmaking.com/',
+      tags: ['Course', 'Technique', 'Recommended'],
+      icon: '🎓'
+    },
+    {
+      id: 'danceoncamera',
+      title: 'Dance on Camera',
+      desc: 'Organization fostering connections between dance and film. Festival screenings and filmmaker support.',
+      url: 'https://www.dancefilms.org/',
+      tags: ['Festival', 'Community', 'Submit'],
+      icon: '📽️'
+    }
+  ];
 
   const getModules = () => {
     switch (activeLab) {
@@ -318,6 +363,99 @@ export default function Labs() {
         .module-arrow { font-size: 1.25rem; color: var(--text-muted); transition: all 0.2s ease; }
         .module-card:hover .module-arrow { color: var(--accent); transform: translateX(4px); }
 
+        /* Resource Cards */
+        .resources-section {
+          margin-bottom: 2rem;
+        }
+
+        .resources-title {
+          font-family: 'Playfair Display', serif;
+          font-size: 1.1rem;
+          font-weight: 600;
+          margin-bottom: 1rem;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+
+        .resources-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 1rem;
+        }
+
+        .resource-card {
+          background: var(--bg-primary);
+          border: 1px solid var(--border);
+          border-radius: 12px;
+          padding: 1.25rem;
+          transition: all 0.2s ease;
+          text-decoration: none;
+          color: inherit;
+          display: block;
+        }
+
+        .resource-card:hover {
+          border-color: #6366F1;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
+        }
+
+        .resource-header {
+          display: flex;
+          align-items: flex-start;
+          gap: 0.75rem;
+          margin-bottom: 0.75rem;
+        }
+
+        .resource-icon {
+          font-size: 1.75rem;
+          line-height: 1;
+        }
+
+        .resource-title {
+          font-weight: 600;
+          font-size: 1rem;
+          margin-bottom: 0.25rem;
+        }
+
+        .resource-tags {
+          display: flex;
+          gap: 0.35rem;
+          flex-wrap: wrap;
+        }
+
+        .resource-tag {
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 0.6rem;
+          padding: 0.2rem 0.4rem;
+          background: rgba(99, 102, 241, 0.1);
+          color: #6366F1;
+          border-radius: 4px;
+          text-transform: uppercase;
+        }
+
+        .resource-tag.recommended {
+          background: rgba(16, 185, 129, 0.1);
+          color: #10B981;
+        }
+
+        .resource-desc {
+          font-size: 0.8rem;
+          color: var(--text-secondary);
+          line-height: 1.5;
+        }
+
+        .resource-link {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.35rem;
+          margin-top: 0.75rem;
+          font-size: 0.8rem;
+          color: #6366F1;
+          font-weight: 500;
+        }
+
         /* Empty State */
         .empty-state {
           text-align: center;
@@ -469,6 +607,10 @@ export default function Labs() {
           color: var(--text-secondary);
         }
 
+        @media (max-width: 768px) {
+          .resources-grid { grid-template-columns: 1fr; }
+        }
+
         @media (max-width: 600px) {
           .lab-selector { flex-wrap: wrap; }
           .lab-tab { padding: 0.6rem 1rem; font-size: 0.85rem; }
@@ -517,7 +659,7 @@ export default function Labs() {
               {labInfo.title}
             </h2>
             <span className="lab-status">
-              {modules.length > 0 ? `${modules.length} Module${modules.length > 1 ? 's' : ''}` : 'AI Coach Available'}
+              {activeLab === 'film' ? 'Resources + AI Coach' : modules.length > 0 ? `${modules.length} Module${modules.length > 1 ? 's' : ''}` : 'AI Coach Available'}
             </span>
           </div>
           <p className="lab-desc">{labInfo.desc}</p>
@@ -550,6 +692,43 @@ export default function Labs() {
               <div className="empty-state-title">General studies modules coming soon</div>
               <div className="empty-state-desc">
                 Core frameworks and skills will be added as we progress through the semester.
+              </div>
+            </div>
+          )}
+
+          {/* Film Lab Resources */}
+          {activeLab === 'film' && (
+            <div className="resources-section">
+              <h3 className="resources-title">📖 Essential Resources</h3>
+              <div className="resources-grid">
+                {filmResources.map((resource) => (
+                  <a 
+                    key={resource.id} 
+                    href={resource.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="resource-card"
+                  >
+                    <div className="resource-header">
+                      <span className="resource-icon">{resource.icon}</span>
+                      <div>
+                        <div className="resource-title">{resource.title}</div>
+                        <div className="resource-tags">
+                          {resource.tags.map((tag) => (
+                            <span 
+                              key={tag} 
+                              className={`resource-tag ${tag.toLowerCase() === 'recommended' ? 'recommended' : ''}`}
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    <p className="resource-desc">{resource.desc}</p>
+                    <span className="resource-link">Visit site →</span>
+                  </a>
+                ))}
               </div>
             </div>
           )}

@@ -51,8 +51,16 @@ export default function Labs() {
       title: 'The Art of Effective Collaboration',
       desc: 'Enter, navigate, and exit collaborations with clarity and integrity',
       date: 'Week 3',
-      status: 'active',
+      status: 'complete',
       path: '/labs/collaboration'
+    },
+    {
+      id: 'choreography-for-camera',
+      title: 'Choreography for the Camera',
+      desc: 'Key differences between stage and film — nuance, speed, pace, depth, and adaptation',
+      date: 'Week 4',
+      status: 'active',
+      path: '/labs/choreography-for-camera'
     }
   ];
 
@@ -60,7 +68,16 @@ export default function Labs() {
   const stageModules: Module[] = [];
 
   // Film Lab - specific to dance on film
-  const filmModules: Module[] = [];
+  const filmModules: Module[] = [
+    {
+      id: 'choreography-for-camera',
+      title: 'Choreography for the Camera',
+      desc: 'Free lesson by Nadav Heyman — nuance, speed, pace, depth, and the pillars technique',
+      date: 'Week 4',
+      status: 'active',
+      path: '/labs/choreography-for-camera'
+    }
+  ];
 
   // Film Lab Resources
   const filmResources: Resource[] = [
@@ -659,7 +676,7 @@ export default function Labs() {
               {labInfo.title}
             </h2>
             <span className="lab-status">
-              {activeLab === 'film' ? 'Resources + AI Coach' : modules.length > 0 ? `${modules.length} Module${modules.length > 1 ? 's' : ''}` : 'AI Coach Available'}
+              {modules.length > 0 ? `${modules.length} Module${modules.length > 1 ? 's' : ''}` : activeLab === 'film' ? 'Resources + AI Coach' : 'AI Coach Available'}
             </span>
           </div>
           <p className="lab-desc">{labInfo.desc}</p>

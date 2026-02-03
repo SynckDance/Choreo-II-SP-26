@@ -13,6 +13,7 @@ import FilmTrack from './pages/FilmTrack';
 import StudyLab from './pages/StudyLab';
 import TwoBodyProblem from './pages/TwoBodyProblem';
 import CollaborationLab from './pages/CollaborationLab';
+import ChoreographyForCamera from './pages/ChoreographyForCamera';
 
 function SignInPage() {
   return (
@@ -47,6 +48,7 @@ export default function App() {
             <Route path="labs" element={<Labs />} />
             <Route path="labs/two-body-problem" element={<TwoBodyProblem />} />
             <Route path="labs/collaboration" element={<CollaborationLab />} />
+            <Route path="labs/choreography-for-camera" element={<ChoreographyForCamera />} />
             <Route path="timeline" element={<Timeline />} />
             <Route path="resources" element={<Resources />} />
             <Route path="resources/stage-designs" element={<StageDesigns />} />

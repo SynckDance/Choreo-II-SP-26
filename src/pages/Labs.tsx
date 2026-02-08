@@ -59,8 +59,16 @@ export default function Labs() {
       title: 'Choreography for the Camera',
       desc: 'Key differences between stage and film — nuance, speed, pace, depth, and adaptation',
       date: 'Week 4',
-      status: 'active',
+      status: 'complete',
       path: '/labs/choreography-for-camera'
+    },
+    {
+      id: 'generative-methods',
+      title: 'Generative Methods',
+      desc: 'From ideation to execution — a process framework for generating choreographic material',
+      date: 'Week 5',
+      status: 'active',
+      path: '/labs/generative-methods'
     }
   ];
 

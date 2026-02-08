@@ -1,50 +1,108 @@
-import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 
-const stageDocs = [
-  { title: 'Technical Specifications', desc: 'Overview of B. Iden Payne Theatre', file: '/docs/public-docs/Payne_Technical_Specs_03_12_24.pdf', category: 'overview' },
-  { title: 'Equipment List', desc: 'Full inventory', file: '/docs/public-docs/01UT_Payne_Equipment_List_2019-03-15.pdf', category: 'overview' },
-  { title: 'As-Built Drawings', desc: 'Reference drawings', file: '/docs/public-docs/WIN_Payne_Theatre_As_Built_Drawings.pdf', category: 'construction' },
-  { title: 'Structural Evaluation', desc: 'Stage and gridiron capacity', file: '/docs/public-docs/combined_WIN_structural_evaluation.pdf', category: 'construction' },
-  { title: 'Lighting Section', desc: '56 linesets and trim heights', file: '/docs/public-docs/FFD_Section_100818.pdf', category: 'lighting' },
-  { title: 'Lighting Patch Panels', desc: 'Circuit layout', file: '/docs/public-docs/PAYNE_LX_PATCH_PANELS.pdf', category: 'lighting' },
-  { title: 'Projections Plan View', desc: 'Throw calculations', file: '/docs/public-docs/_10-1-18__Fall_for_Dance_Projections_Plan_View_V2.pdf', category: 'projections' },
-  { title: 'Projections Section', desc: 'Barco and Panasonic specs', file: '/docs/public-docs/_10-1-18__Fall_for_Dance_Projections_Sectional_V2.pdf', category: 'projections' },
-  { title: 'LED Wall Proposal', desc: 'Add-alt proposal', file: '/docs/public-docs/Payne_AET_Proposal_LED_WALL.pdf', category: 'projections' },
-  { title: 'Audio Plots', desc: 'Rep system drawings', file: '/docs/public-docs/02_UT_Payne_Audio_01-14_Plots_2019-03-15.pdf', category: 'audio' },
-  { title: 'Audio Signal Flow', desc: 'Block diagram', file: '/docs/public-docs/03_UT_Payne_Audio_15_Rep_Signal_Flow_2019-06-13.pdf', category: 'audio' },
-  { title: 'Audio Rack Elevations', desc: 'Amp, FOH, RF, IEM racks', file: '/docs/public-docs/04_UT_Payne_Audio_15-16_Racks_2019-06-13.pdf', category: 'audio' },
-  { title: 'Audio Panel Details', desc: 'Types A-G and patch panels', file: '/docs/public-docs/05_UT_Payne_Audio_17-18_Panel_Details_2019-06-17.pdf', category: 'audio' },
-  { title: 'Audio Conduit Pathway', desc: 'Stage to booth routing', file: '/docs/public-docs/WIN_PAYNE_AUDIO_CONDUIT_PATHWAY_MARKUP_V1.pdf', category: 'audio' },
-  { title: 'PE Markups', desc: 'Power and audio plans', file: '/docs/public-docs/06_UT_Payne_PE_Markups_2019-03-15.pdf', category: 'electrical' },
-];
-
-const filmTemplates = [
-  { title: 'Storyboard Template', desc: 'Beat map and shot planning', icon: '📋' },
-  { title: 'Shot List Template', desc: 'Coverage and continuity', icon: '📝' },
-  { title: 'Casting Call Template', desc: 'Audition announcement', icon: '📢' },
-  { title: 'Camera Test Rubric', desc: 'Performer evaluation', icon: '📊' },
-  { title: 'Production Log', desc: 'Shoot day documentation', icon: '📓' },
-  { title: 'Post-Production Notes', desc: 'Edit, sound, color notes', icon: '✂️' },
-];
+interface Resource {
+  id: string;
+  title: string;
+  desc: string;
+  url: string;
+  tags: string[];
+  icon: string;
+  category: 'production' | 'research' | 'film' | 'venue';
+}
 
 export default function Resources() {
-  const [activeSection, setActiveSection] = useState<'stage' | 'film'>('stage');
-  const [activeCategory, setActiveCategory] = useState('all');
-
-  const categories = [
-    { id: 'all', label: 'All' },
-    { id: 'overview', label: 'Overview' },
-    { id: 'lighting', label: 'Lighting' },
-    { id: 'audio', label: 'Audio' },
-    { id: 'projections', label: 'Projections' },
-    { id: 'construction', label: 'Construction' },
-    { id: 'electrical', label: 'Electrical' },
+  const resources: Resource[] = [
+    // Production Resources
+    {
+      id: 'costume-stock',
+      title: 'UT Costume Stock',
+      desc: 'Large diverse costume collection in Winship B.106. Free for UT Theatre & Dance students for class projects, New Works Festival, and EVOLUTION.',
+      url: 'https://cloud.wikis.utexas.edu/wiki/spaces/tad/pages/71391057/UT+Costume+Stock+past',
+      tags: ['Free', 'UT Resource', 'Costumes'],
+      icon: '👗',
+      category: 'production'
+    },
+    {
+      id: 'prop-shop',
+      title: 'TPA Prop Stock',
+      desc: 'Furniture, hand props, and set dressing available for checkout. Free for UT Austin class, thesis, or curriculum projects.',
+      url: 'https://sites.google.com/site/utpropshop/home',
+      tags: ['Free', 'UT Resource', 'Props'],
+      icon: '🪑',
+      category: 'production'
+    },
+    {
+      id: 'foundry',
+      title: 'UT Foundry',
+      desc: 'COFA Library makerspace with sewing machines, recording booths, and 3D printers for student use.',
+      url: 'https://www.lib.utexas.edu/visit-us/library-spaces/foundry',
+      tags: ['Free', 'UT Resource', 'Making'],
+      icon: '🔧',
+      category: 'production'
+    },
+    {
+      id: 'creative-reuse',
+      title: 'Austin Creative Reuse',
+      desc: 'Affordable gently used crafting materials. Great for production design on a budget.',
+      url: 'https://austincreativereuse.org/',
+      tags: ['Budget', 'Local', 'Materials'],
+      icon: '♻️',
+      category: 'production'
+    },
+    // Film Resources
+    {
+      id: 'numeridanse',
+      title: 'Numeridanse',
+      desc: 'Free international dance video library with 800+ dance films, documentaries, and performances.',
+      url: 'https://numeridanse.com/en/publication/category/dance-films/',
+      tags: ['Watch', 'Research', 'Free'],
+      icon: '🎬',
+      category: 'film'
+    },
+    {
+      id: 'dancefilmmaking',
+      title: 'Dance Filmmaking',
+      desc: 'The #1 online hub for dance films and screendance. Curated films from around the world.',
+      url: 'https://www.dancefilmmaking.com',
+      tags: ['Watch', 'Learn', 'Submit'],
+      icon: '🎥',
+      category: 'film'
+    },
+    {
+      id: 'masterclass',
+      title: 'Dance Filmmaking Masterclass',
+      desc: 'Comprehensive course on conceptualization, cinematography, and editing by Nadav Heyman.',
+      url: 'https://masterclass.dancefilmmaking.com/',
+      tags: ['Course', 'Recommended'],
+      icon: '🎓',
+      category: 'film'
+    },
+    {
+      id: 'danceoncamera',
+      title: 'Dance on Camera',
+      desc: 'Organization fostering connections between dance and film. Festival screenings and filmmaker support.',
+      url: 'https://www.dancefilms.org/',
+      tags: ['Festival', 'Community'],
+      icon: '📽️',
+      category: 'film'
+    },
+    // Venue Resources
+    {
+      id: 'payne-theatre',
+      title: 'B. Iden Payne Theatre',
+      desc: 'Technical specifications, equipment lists, and stage plots for our performance venue.',
+      url: '/resources/stage-designs',
+      tags: ['Stage', 'Technical'],
+      icon: '🎭',
+      category: 'venue'
+    }
   ];
 
-  const filteredDocs = activeCategory === 'all' 
-    ? stageDocs 
-    : stageDocs.filter(d => d.category === activeCategory);
+  const categories = [
+    { id: 'production', title: 'Production Resources', desc: 'Costumes, props, materials, and making' },
+    { id: 'film', title: 'Film Resources', desc: 'Dance on screen — watch, learn, submit' },
+    { id: 'venue', title: 'Venue & Technical', desc: 'Theatre specifications and stage design' }
+  ];
 
   return (
     <div className="resources-page">
@@ -55,7 +113,7 @@ export default function Resources() {
         }
 
         .page-header {
-          margin-bottom: 2rem;
+          margin-bottom: 2.5rem;
         }
 
         .page-title {
@@ -72,345 +130,207 @@ export default function Resources() {
           max-width: 600px;
         }
 
-        /* Section Toggle */
-        .section-toggle {
-          display: flex;
-          gap: 1rem;
-          margin-bottom: 2rem;
+        .category-section {
+          margin-bottom: 3rem;
         }
 
-        .section-btn {
-          flex: 1;
-          padding: 1.25rem;
-          background: var(--bg-secondary);
-          border: 2px solid var(--border);
-          border-radius: 10px;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          text-align: center;
-        }
-
-        .section-btn:hover {
-          border-color: var(--text-muted);
-        }
-
-        .section-btn.active {
-          border-color: var(--accent);
-        }
-
-        .section-btn-icon {
-          font-size: 1.75rem;
-          margin-bottom: 0.5rem;
-        }
-
-        .section-btn-title {
-          font-weight: 600;
-          font-size: 0.95rem;
-        }
-
-        .section-btn-count {
-          font-family: 'JetBrains Mono', monospace;
-          font-size: 0.7rem;
-          color: var(--text-muted);
-          margin-top: 0.25rem;
-        }
-
-        /* Category Filter */
-        .category-filter {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 0.5rem;
+        .category-header {
           margin-bottom: 1.5rem;
         }
 
-        .category-btn {
-          padding: 0.4rem 0.8rem;
-          background: var(--bg-secondary);
-          border: 1px solid var(--border);
-          border-radius: 4px;
-          font-size: 0.75rem;
-          color: var(--text-secondary);
-          cursor: pointer;
-          transition: all 0.2s ease;
-        }
-
-        .category-btn:hover {
-          border-color: var(--text-muted);
-        }
-
-        .category-btn.active {
-          background: var(--accent);
-          border-color: var(--accent);
-          color: white;
-        }
-
-        /* Documents Grid */
-        .docs-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-          gap: 1rem;
-        }
-
-        .doc-card {
-          display: flex;
-          align-items: center;
-          gap: 1rem;
-          padding: 1rem 1.25rem;
-          background: var(--bg-secondary);
-          border: 1px solid var(--border);
-          border-radius: 8px;
-          text-decoration: none;
-          color: inherit;
-          transition: all 0.2s ease;
-        }
-
-        .doc-card:hover {
-          border-color: var(--accent);
-          transform: translateY(-2px);
-          box-shadow: var(--shadow);
-        }
-
-        .doc-icon {
-          width: 40px;
-          height: 40px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: var(--accent);
-          color: white;
-          border-radius: 6px;
-          font-size: 1rem;
-          flex-shrink: 0;
-        }
-
-        .doc-info {
-          flex: 1;
-          min-width: 0;
-        }
-
-        .doc-title {
-          font-weight: 600;
-          font-size: 0.9rem;
-          margin-bottom: 0.2rem;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-
-        .doc-desc {
-          font-size: 0.75rem;
-          color: var(--text-muted);
-        }
-
-        .doc-arrow {
-          color: var(--text-muted);
-          transition: transform 0.2s ease;
-        }
-
-        .doc-card:hover .doc-arrow {
-          transform: translateX(3px);
-          color: var(--accent);
-        }
-
-        /* Templates Grid */
-        .templates-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-          gap: 1rem;
-        }
-
-        .template-card {
-          padding: 1.5rem;
-          background: var(--bg-secondary);
-          border: 1px solid var(--border);
-          border-radius: 10px;
-          transition: all 0.2s ease;
-        }
-
-        .template-card:hover {
-          border-color: var(--accent);
-          transform: translateY(-2px);
-        }
-
-        .template-icon {
-          font-size: 2rem;
-          margin-bottom: 0.75rem;
-        }
-
-        .template-title {
-          font-weight: 600;
-          margin-bottom: 0.35rem;
-        }
-
-        .template-desc {
-          font-size: 0.85rem;
-          color: var(--text-secondary);
-        }
-
-        /* Link to full page */
-        .full-page-link {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.5rem;
-          margin-top: 2rem;
-          padding: 0.75rem 1.25rem;
-          background: var(--bg-secondary);
-          border: 1px solid var(--border);
-          border-radius: 8px;
-          text-decoration: none;
-          color: var(--text-primary);
-          font-size: 0.85rem;
-          font-weight: 500;
-          transition: all 0.2s ease;
-        }
-
-        .full-page-link:hover {
-          border-color: var(--accent);
-          color: var(--accent);
-        }
-
-        /* External Link */
-        .external-link {
-          display: flex;
-          align-items: center;
-          gap: 1rem;
-          padding: 1.25rem;
-          background: var(--bg-secondary);
-          border: 1px solid var(--border);
-          border-radius: 10px;
-          text-decoration: none;
-          color: inherit;
-          margin-top: 1.5rem;
-          transition: all 0.2s ease;
-        }
-
-        .external-link:hover {
-          border-color: var(--accent);
-        }
-
-        .external-icon {
-          width: 48px;
-          height: 48px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: var(--accent);
-          border-radius: 8px;
-          font-size: 1.5rem;
-        }
-
-        .external-info {
-          flex: 1;
-        }
-
-        .external-title {
+        .category-title {
+          font-family: 'Playfair Display', serif;
+          font-size: 1.4rem;
           font-weight: 600;
           margin-bottom: 0.25rem;
         }
 
-        .external-desc {
-          font-size: 0.8rem;
+        .category-desc {
+          font-size: 0.9rem;
+          color: var(--text-muted);
+        }
+
+        .resources-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 1rem;
+        }
+
+        .resource-card {
+          background: var(--bg-secondary);
+          border: 1px solid var(--border);
+          border-radius: 12px;
+          padding: 1.5rem;
+          text-decoration: none;
+          color: inherit;
+          transition: all 0.2s ease;
+          display: block;
+        }
+
+        .resource-card:hover {
+          border-color: var(--accent);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .resource-card.internal:hover {
+          border-color: #E85D04;
+        }
+
+        .resource-header {
+          display: flex;
+          align-items: flex-start;
+          gap: 1rem;
+          margin-bottom: 0.75rem;
+        }
+
+        .resource-icon {
+          font-size: 2rem;
+          line-height: 1;
+        }
+
+        .resource-title {
+          font-weight: 600;
+          font-size: 1.1rem;
+          margin-bottom: 0.35rem;
+        }
+
+        .resource-tags {
+          display: flex;
+          gap: 0.35rem;
+          flex-wrap: wrap;
+        }
+
+        .resource-tag {
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 0.6rem;
+          padding: 0.2rem 0.5rem;
+          background: var(--border-light);
+          color: var(--text-muted);
+          border-radius: 4px;
+          text-transform: uppercase;
+        }
+
+        .resource-tag.free {
+          background: rgba(16, 185, 129, 0.1);
+          color: #10B981;
+        }
+
+        .resource-tag.ut {
+          background: rgba(191, 87, 0, 0.1);
+          color: #BF5700;
+        }
+
+        .resource-tag.recommended {
+          background: rgba(99, 102, 241, 0.1);
+          color: #6366F1;
+        }
+
+        .resource-desc {
+          font-size: 0.85rem;
           color: var(--text-secondary);
+          line-height: 1.5;
+        }
+
+        .resource-link {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.35rem;
+          margin-top: 0.75rem;
+          font-size: 0.85rem;
+          color: var(--accent);
+          font-weight: 500;
+        }
+
+        .contact-note {
+          margin-top: 2rem;
+          padding: 1.25rem 1.5rem;
+          background: var(--bg-secondary);
+          border: 1px solid var(--border);
+          border-radius: 10px;
+          font-size: 0.9rem;
+          color: var(--text-secondary);
+        }
+
+        .contact-note strong {
+          color: var(--text-primary);
+        }
+
+        @media (max-width: 768px) {
+          .resources-grid {
+            grid-template-columns: 1fr;
+          }
         }
       `}</style>
 
-      <div className="page-header">
+      <header className="page-header">
         <h1 className="page-title">Resources</h1>
         <p className="page-subtitle">
-          Technical documents, templates, and reference materials for your choreographic work.
+          Tools, materials, and references to support your EVOLUTION projects — from costumes and props to film libraries and technical specs.
         </p>
-      </div>
+      </header>
 
-      <div className="section-toggle">
-        <button
-          className={`section-btn ${activeSection === 'stage' ? 'active' : ''}`}
-          onClick={() => setActiveSection('stage')}
-        >
-          <div className="section-btn-icon">🎭</div>
-          <div className="section-btn-title">Stage Resources</div>
-          <div className="section-btn-count">{stageDocs.length} documents</div>
-        </button>
-        <button
-          className={`section-btn ${activeSection === 'film' ? 'active' : ''}`}
-          onClick={() => setActiveSection('film')}
-        >
-          <div className="section-btn-icon">🎬</div>
-          <div className="section-btn-title">Film Resources</div>
-          <div className="section-btn-count">{filmTemplates.length} templates</div>
-        </button>
-      </div>
-
-      {activeSection === 'stage' ? (
-        <>
-          <div className="category-filter">
-            {categories.map((cat) => (
-              <button
-                key={cat.id}
-                className={`category-btn ${activeCategory === cat.id ? 'active' : ''}`}
-                onClick={() => setActiveCategory(cat.id)}
-              >
-                {cat.label}
-              </button>
-            ))}
-          </div>
-
-          <div className="docs-grid">
-            {filteredDocs.map((doc, i) => (
-              <a
-                key={i}
-                href={doc.file}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="doc-card"
-              >
-                <div className="doc-icon">📄</div>
-                <div className="doc-info">
-                  <div className="doc-title">{doc.title}</div>
-                  <div className="doc-desc">{doc.desc}</div>
-                </div>
-                <span className="doc-arrow">→</span>
-              </a>
-            ))}
-          </div>
-
-          <NavLink to="/resources/stage-designs" className="full-page-link">
-            View Full Stage Designs Reference →
-          </NavLink>
-
-          <NavLink to="/resources/study-lab" className="full-page-link" style={{ marginLeft: '1rem' }}>
-            View Study Lab (15 Choreographers) →
-          </NavLink>
-        </>
-      ) : (
-        <>
-          <div className="templates-grid">
-            {filmTemplates.map((t, i) => (
-              <div key={i} className="template-card">
-                <div className="template-icon">{t.icon}</div>
-                <div className="template-title">{t.title}</div>
-                <div className="template-desc">{t.desc}</div>
-              </div>
-            ))}
-          </div>
-
-          <a
-            href="https://www.dancefilmmaking.com/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="external-link"
-          >
-            <div className="external-icon">🎥</div>
-            <div className="external-info">
-              <div className="external-title">DanceFilmmaking.com</div>
-              <div className="external-desc">Our main research library for dance film examples and tutorials</div>
+      {categories.map((category) => {
+        const categoryResources = resources.filter(r => r.category === category.id);
+        if (categoryResources.length === 0) return null;
+        
+        return (
+          <section key={category.id} className="category-section">
+            <div className="category-header">
+              <h2 className="category-title">{category.title}</h2>
+              <p className="category-desc">{category.desc}</p>
             </div>
-          </a>
+            <div className="resources-grid">
+              {categoryResources.map((resource) => {
+                const isInternal = resource.url.startsWith('/');
+                const Component = isInternal ? NavLink : 'a';
+                const linkProps = isInternal 
+                  ? { to: resource.url } 
+                  : { href: resource.url, target: '_blank', rel: 'noopener noreferrer' };
+                
+                return (
+                  <Component 
+                    key={resource.id} 
+                    className={`resource-card ${isInternal ? 'internal' : ''}`}
+                    {...linkProps}
+                  >
+                    <div className="resource-header">
+                      <span className="resource-icon">{resource.icon}</span>
+                      <div>
+                        <div className="resource-title">{resource.title}</div>
+                        <div className="resource-tags">
+                          {resource.tags.map((tag) => (
+                            <span 
+                              key={tag} 
+                              className={`resource-tag ${
+                                tag.toLowerCase() === 'free' ? 'free' : 
+                                tag.toLowerCase() === 'ut resource' ? 'ut' :
+                                tag.toLowerCase() === 'recommended' ? 'recommended' : ''
+                              }`}
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    <p className="resource-desc">{resource.desc}</p>
+                    <span className="resource-link">
+                      {isInternal ? 'View →' : 'Visit site →'}
+                    </span>
+                  </Component>
+                );
+              })}
+            </div>
+          </section>
+        );
+      })}
 
-          <NavLink to="/tracks/film" className="full-page-link">
-            View Full Film Track Guide →
-          </NavLink>
-        </>
-      )}
+      <div className="contact-note">
+        <strong>Need help accessing a resource?</strong> Reach out to <strong>Annie (TA)</strong> or <strong>Prof. Emoghene</strong>. 
+        For costume appointments, email <a href="mailto:utcostumerental@gmail.com">utcostumerental@gmail.com</a>. 
+        For props, contact <a href="mailto:amurphy@texasperformingarts.org">amurphy@texasperformingarts.org</a>.
+      </div>
     </div>
   );
 }

@@ -283,16 +283,47 @@ export default function Resources() {
             <div className="resources-grid">
               {categoryResources.map((resource) => {
                 const isInternal = resource.url.startsWith('/');
-                const Component = isInternal ? NavLink : 'a';
-                const linkProps = isInternal 
-                  ? { to: resource.url } 
-                  : { href: resource.url, target: '_blank', rel: 'noopener noreferrer' };
+                
+                if (isInternal) {
+                  return (
+                    <NavLink 
+                      key={resource.id} 
+                      to={resource.url}
+                      className="resource-card internal"
+                    >
+                      <div className="resource-header">
+                        <span className="resource-icon">{resource.icon}</span>
+                        <div>
+                          <div className="resource-title">{resource.title}</div>
+                          <div className="resource-tags">
+                            {resource.tags.map((tag) => (
+                              <span 
+                                key={tag} 
+                                className={`resource-tag ${
+                                  tag.toLowerCase() === 'free' ? 'free' : 
+                                  tag.toLowerCase() === 'ut resource' ? 'ut' :
+                                  tag.toLowerCase() === 'recommended' ? 'recommended' : ''
+                                }`}
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                      <p className="resource-desc">{resource.desc}</p>
+                      <span className="resource-link">View →</span>
+                    </NavLink>
+                  );
+                }
                 
                 return (
-                  <Component 
+                  <a 
                     key={resource.id} 
-                    className={`resource-card ${isInternal ? 'internal' : ''}`}
-                    {...linkProps}
+                    href={resource.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="resource-card"
                   >
                     <div className="resource-header">
                       <span className="resource-icon">{resource.icon}</span>
@@ -315,10 +346,8 @@ export default function Resources() {
                       </div>
                     </div>
                     <p className="resource-desc">{resource.desc}</p>
-                    <span className="resource-link">
-                      {isInternal ? 'View →' : 'Visit site →'}
-                    </span>
-                  </Component>
+                    <span className="resource-link">Visit site →</span>
+                  </a>
                 );
               })}
             </div>

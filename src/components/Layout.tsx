@@ -1,3 +1,6 @@
+import { useState } from 'react';
+import { NavLink, Outlet } from 'react-router-dom';
+
 const styles = `
   @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
 

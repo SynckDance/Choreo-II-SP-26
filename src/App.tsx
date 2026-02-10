@@ -1,5 +1,4 @@
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { SignedIn, SignedOut, SignIn } from '@clerk/clerk-react';
 import Layout from './components/Layout';
 import Home from './pages/Home';
 import Pathways from './pages/Pathways';
@@ -16,50 +15,29 @@ import CollaborationLab from './pages/CollaborationLab';
 import ChoreographyForCamera from './pages/ChoreographyForCamera';
 import GenerativeMethods from './pages/GenerativeMethods';
 
-function SignInPage() {
-  return (
-    <div style={{
-      minHeight: '100vh',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      background: '#FAFAFA'
-    }}>
-      <SignIn routing="hash" />
-    </div>
-  );
-}
-
 export default function App() {
   return (
     <HashRouter>
-      <SignedOut>
-        <Routes>
-          <Route path="*" element={<SignInPage />} />
-        </Routes>
-      </SignedOut>
-      <SignedIn>
-        <Routes>
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Home />} />
-            <Route path="pathways" element={<Pathways />} />
-            <Route path="tracks" element={<Tracks />} />
-            <Route path="tracks/stage" element={<Tracks />} />
-            <Route path="tracks/film" element={<FilmTrack />} />
-            <Route path="labs" element={<Labs />} />
-            <Route path="labs/two-body-problem" element={<TwoBodyProblem />} />
-            <Route path="labs/collaboration" element={<CollaborationLab />} />
-            <Route path="labs/choreography-for-camera" element={<ChoreographyForCamera />} />
-            <Route path="labs/generative-methods" element={<GenerativeMethods />} />
-            <Route path="timeline" element={<Timeline />} />
-            <Route path="resources" element={<Resources />} />
-            <Route path="resources/stage-designs" element={<StageDesigns />} />
-            <Route path="resources/study-lab" element={<StudyLab />} />
-            <Route path="books" element={<Books />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Route>
-        </Routes>
-      </SignedIn>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<Home />} />
+          <Route path="pathways" element={<Pathways />} />
+          <Route path="tracks" element={<Tracks />} />
+          <Route path="tracks/stage" element={<Tracks />} />
+          <Route path="tracks/film" element={<FilmTrack />} />
+          <Route path="labs" element={<Labs />} />
+          <Route path="labs/two-body-problem" element={<TwoBodyProblem />} />
+          <Route path="labs/collaboration" element={<CollaborationLab />} />
+          <Route path="labs/choreography-for-camera" element={<ChoreographyForCamera />} />
+          <Route path="labs/generative-methods" element={<GenerativeMethods />} />
+          <Route path="timeline" element={<Timeline />} />
+          <Route path="resources" element={<Resources />} />
+          <Route path="resources/stage-designs" element={<StageDesigns />} />
+          <Route path="resources/study-lab" element={<StudyLab />} />
+          <Route path="books" element={<Books />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Route>
+      </Routes>
     </HashRouter>
   );
 }

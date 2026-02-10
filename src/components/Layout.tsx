@@ -1,6 +1,3 @@
-import { useState } from 'react';
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
-
 const styles = `
   @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
 
@@ -262,7 +259,6 @@ const NAV_ITEMS = [
 
 export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const location = useLocation();
 
   const closeSidebar = () => setSidebarOpen(false);
 

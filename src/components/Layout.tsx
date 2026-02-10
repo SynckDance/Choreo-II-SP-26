@@ -1,5 +1,4 @@
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { UserButton } from '@clerk/clerk-react';
 import { useEffect, useState } from 'react';
 
 const navItems = [

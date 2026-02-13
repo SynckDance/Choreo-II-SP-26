@@ -262,7 +262,7 @@ export default function Home() {
         <p className="quote-text">
           "Evolution is a collaboration, not a commission."
         </p>
-        <p className="quote-author">— Prof. Sinclair Emoghene</p>
+        <p className="quote-author">— EG Gionfreddo</p>
       </div>
 
       <div className="section">

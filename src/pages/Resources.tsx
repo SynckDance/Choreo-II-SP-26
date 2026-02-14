@@ -7,11 +7,21 @@ interface Resource {
   url: string;
   tags: string[];
   icon: string;
-  category: 'production' | 'research' | 'film' | 'venue';
+  category: 'tools' | 'production' | 'research' | 'film' | 'venue';
 }
 
 export default function Resources() {
   const resources: Resource[] = [
+    // Tools
+    {
+      id: 'triadic-mind',
+      title: 'Triadic Mind',
+      desc: 'An AI assistant built for dance. Use it to plan combinations, structure rehearsals, journal about your process, explore movement concepts, and think through choreographic problems. Sign in and ask it what you\'re working on.',
+      url: 'https://mind.thetriadic.studio',
+      tags: ['AI', 'Free', 'Recommended'],
+      icon: '🧠',
+      category: 'tools'
+    },
     // Production Resources
     {
       id: 'costume-stock',
@@ -99,6 +109,7 @@ export default function Resources() {
   ];
 
   const categories = [
+    { id: 'tools', title: 'Tools', desc: 'AI and digital tools for choreographic work' },
     { id: 'production', title: 'Production Resources', desc: 'Costumes, props, materials, and making' },
     { id: 'film', title: 'Film Resources', desc: 'Dance on screen — watch, learn, submit' },
     { id: 'venue', title: 'Venue & Technical', desc: 'Theatre specifications and stage design' }
@@ -177,6 +188,16 @@ export default function Resources() {
           border-color: #E85D04;
         }
 
+        .resource-card.featured {
+          grid-column: 1 / -1;
+          background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(99, 102, 241, 0.05) 100%);
+          border-color: rgba(99, 102, 241, 0.3);
+        }
+
+        .resource-card.featured:hover {
+          border-color: #6366F1;
+        }
+
         .resource-header {
           display: flex;
           align-items: flex-start;
@@ -223,6 +244,11 @@ export default function Resources() {
 
         .resource-tag.recommended {
           background: rgba(99, 102, 241, 0.1);
+          color: #6366F1;
+        }
+
+        .resource-tag.ai {
+          background: rgba(99, 102, 241, 0.15);
           color: #6366F1;
         }
 
@@ -283,13 +309,14 @@ export default function Resources() {
             <div className="resources-grid">
               {categoryResources.map((resource) => {
                 const isInternal = resource.url.startsWith('/');
+                const isFeatured = resource.id === 'triadic-mind';
                 
                 if (isInternal) {
                   return (
                     <NavLink 
                       key={resource.id} 
                       to={resource.url}
-                      className="resource-card internal"
+                      className={`resource-card internal ${isFeatured ? 'featured' : ''}`}
                     >
                       <div className="resource-header">
                         <span className="resource-icon">{resource.icon}</span>
@@ -302,7 +329,8 @@ export default function Resources() {
                                 className={`resource-tag ${
                                   tag.toLowerCase() === 'free' ? 'free' : 
                                   tag.toLowerCase() === 'ut resource' ? 'ut' :
-                                  tag.toLowerCase() === 'recommended' ? 'recommended' : ''
+                                  tag.toLowerCase() === 'recommended' ? 'recommended' :
+                                  tag.toLowerCase() === 'ai' ? 'ai' : ''
                                 }`}
                               >
                                 {tag}
@@ -323,7 +351,7 @@ export default function Resources() {
                     href={resource.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="resource-card"
+                    className={`resource-card ${isFeatured ? 'featured' : ''}`}
                   >
                     <div className="resource-header">
                       <span className="resource-icon">{resource.icon}</span>
@@ -336,7 +364,8 @@ export default function Resources() {
                               className={`resource-tag ${
                                 tag.toLowerCase() === 'free' ? 'free' : 
                                 tag.toLowerCase() === 'ut resource' ? 'ut' :
-                                tag.toLowerCase() === 'recommended' ? 'recommended' : ''
+                                tag.toLowerCase() === 'recommended' ? 'recommended' :
+                                tag.toLowerCase() === 'ai' ? 'ai' : ''
                               }`}
                             >
                               {tag}

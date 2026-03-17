@@ -1,4 +1,31 @@
 import { useState } from 'react';
+import { filmProductionSections } from '../data/filmProduction';
+import type { FilmProductionSection, ProductionTable } from '../data/filmProduction';
+
+function GuideTable({ table }: { table: ProductionTable }) {
+  return (
+    <div className="guide-table-wrapper">
+      <table className="guide-table">
+        <thead>
+          <tr>
+            {table.headers.map((h, i) => (
+              <th key={i}>{h}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {table.rows.map((row, ri) => (
+            <tr key={ri}>
+              {row.map((cell, ci) => (
+                <td key={ci}>{cell}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
 
 const styles = `
   @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
@@ -265,6 +292,199 @@ const styles = `
     .ft-workflow-timeline { flex-direction: column; }
     .ft-workflow-phase { border-right: 3px solid #000; }
   }
+
+  /* Production Guide */
+  .production-guide {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .guide-intro {
+    padding: 24px 0 32px;
+    border-bottom: 2px solid #000;
+  }
+
+  .guide-intro p {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    color: #666;
+    line-height: 1.7;
+    max-width: 680px;
+  }
+
+  .guide-section {
+    border-bottom: 1px solid #E8E8E8;
+    padding: 32px 0;
+  }
+
+  .guide-section:last-child {
+    border-bottom: none;
+  }
+
+  .guide-section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .guide-section-number {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: #A855F7;
+    letter-spacing: 0.1em;
+    flex-shrink: 0;
+  }
+
+  .guide-section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: #000;
+    margin: 0;
+  }
+
+  .guide-methodology {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .guide-paragraph {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.75;
+    color: #333333;
+    margin: 0;
+  }
+
+  .guide-subsection {
+    margin-top: 20px;
+  }
+
+  .guide-subsection-title {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #666;
+    margin: 0 0 12px;
+  }
+
+  /* Table */
+  .guide-table-wrapper {
+    overflow-x: auto;
+    border: 1px solid #E8E8E8;
+    border-radius: 0;
+  }
+
+  .guide-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+  }
+
+  .guide-table th {
+    background: #000;
+    color: #fff;
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 10px 14px;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  .guide-table td {
+    padding: 10px 14px;
+    color: #333333;
+    border-bottom: 1px solid #E8E8E8;
+    vertical-align: top;
+    line-height: 1.5;
+  }
+
+  .guide-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .guide-table tr:nth-child(even) td {
+    background: #FAFAFA;
+  }
+
+  /* List */
+  .guide-list {
+    padding-left: 24px;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .guide-list li {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.65;
+    color: #333333;
+  }
+
+  /* Example */
+  .guide-example-wrapper {
+    margin-top: 8px;
+  }
+
+  .guide-example-toggle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 12px 16px;
+    background: #FAFAFA;
+    border: 1px solid #E8E8E8;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: #A855F7;
+    text-align: left;
+    transition: background 0.15s;
+  }
+
+  .guide-example-toggle:hover {
+    background: #F0F0F0;
+  }
+
+  .guide-example-body {
+    padding: 20px;
+    background: #F8F4F1;
+    border: 1px solid #E8DDD8;
+    border-top: none;
+  }
+
+  .guide-example-line {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    color: #2A2A2A;
+    margin: 0;
+    white-space: pre-wrap;
+  }
+
+  @media (max-width: 768px) {
+    .guide-section-title {
+      font-size: 18px;
+    }
+    .guide-table th,
+    .guide-table td {
+      font-size: 13px;
+      padding: 8px 10px;
+    }
+  }
 `;
 
 const TABS = [
@@ -274,11 +494,22 @@ const TABS = [
   { id: 'casting', label: '🎭 Casting', color: 'blue' },
   { id: 'research', label: '📚 Research', color: 'yellow' },
   { id: 'templates', label: '📄 Templates', color: 'orange' },
+  { id: 'guide', label: '📖 Production Guide', color: 'violet' },
 ];
 
 export default function FilmTrack() {
   const [activeTab, setActiveTab] = useState('overview');
   const [activePhase, setActivePhase] = useState('pre');
+  const [expandedExamples, setExpandedExamples] = useState<Set<string>>(new Set());
+
+  const toggleExample = (id: string) => {
+    setExpandedExamples(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   const renderContent = () => {
     switch (activeTab) {
@@ -288,6 +519,7 @@ export default function FilmTrack() {
       case 'casting': return <CastingSection />;
       case 'research': return <ResearchSection />;
       case 'templates': return <TemplatesSection />;
+      case 'guide': return <ProductionGuideSection expandedExamples={expandedExamples} toggleExample={toggleExample} />;
       default: return <OverviewSection onNavigate={setActiveTab} />;
     }
   };
@@ -846,6 +1078,80 @@ function TemplatesSection() {
           <h4>Festival Readiness (Optional)</h4>
           <p>Create a trailer (15-30 sec), synopsis (50-150 words), director statement, correct file specs, and confirm music permissions.</p>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function ProductionGuideSection({ expandedExamples, toggleExample }: { expandedExamples: Set<string>; toggleExample: (id: string) => void }) {
+  return (
+    <div className="ft-section">
+      <div className="ft-section-header">
+        <div className="ft-section-icon violet">📖</div>
+        <h2 className="ft-section-title">Production Guide</h2>
+      </div>
+
+      <div className="production-guide">
+        <div className="guide-intro">
+          <p>A complete reference for dance film production — from script diagram through final mix. Each section includes methodology and a worked example from the Ten Poem Project.</p>
+        </div>
+
+        {filmProductionSections.map((section: FilmProductionSection) => (
+          <div key={section.number} className="guide-section">
+
+            <div className="guide-section-header">
+              <span className="guide-section-number">{section.number}</span>
+              <h3 className="guide-section-title">{section.title}</h3>
+            </div>
+
+            <div className="guide-methodology">
+              {section.methodology.paragraphs.map((p, i) => (
+                <p key={i} className="guide-paragraph">{p}</p>
+              ))}
+
+              {section.methodology.subSections?.map((sub, si) => (
+                <div key={si} className="guide-subsection">
+                  <h4 className="guide-subsection-title">{sub.title}</h4>
+
+                  {sub.table && <GuideTable table={sub.table} />}
+
+                  {sub.list && (
+                    <ol className="guide-list">
+                      {sub.list.map((item, li) => (
+                        <li key={li}>{item}</li>
+                      ))}
+                    </ol>
+                  )}
+
+                  {sub.paragraphs?.map((p, pi) => (
+                    <p key={pi} className="guide-paragraph">{p}</p>
+                  ))}
+                </div>
+              ))}
+            </div>
+
+            <div className="guide-example-wrapper">
+              <button
+                className="guide-example-toggle"
+                onClick={() => toggleExample(section.number)}
+              >
+                <span>Example: {section.example.title}</span>
+                <span>{expandedExamples.has(section.number) ? '▲' : '▼'}</span>
+              </button>
+
+              {expandedExamples.has(section.number) && (
+                <div className="guide-example-body">
+                  {section.example.lines.map((line, li) => (
+                    line === ''
+                      ? <br key={li} />
+                      : <p key={li} className="guide-example-line">{line}</p>
+                  ))}
+                </div>
+              )}
+            </div>
+
+          </div>
+        ))}
       </div>
     </div>
   );

@@ -40,7 +40,8 @@ export default function Evolution() {
       day: 'Monday',
       venue: 'B. Iden Payne Theatre',
       groups: [
-        { group: 'Group 1', members: ['Valentina', 'Emma', 'Marco'], rehearsal: 'Tech Rehearsal #1', time: '6:30pm - 9:30pm' }
+        { group: 'Group 1', members: ['Valentina', 'Emma', 'Marco'], rehearsal: 'Tech Rehearsal #1', time: '6:30pm - 9:30pm' },
+        { group: 'Group 6', members: ['Maddie', 'Tri'], rehearsal: 'Tech Rehearsal #6', time: '3:30pm - 6:30pm' }
       ]
     },
     {
@@ -57,11 +58,11 @@ export default function Evolution() {
       day: 'Wednesday',
       venue: 'B. Iden Payne Theatre',
       groups: [
-        { group: 'Group 4', members: ['Elyse', 'Jae'], rehearsal: 'Tech Rehearsal #4', time: '3:30pm - 4:15pm' },
-        { group: 'Group 5', members: ['Jeremy', 'Rhea', 'Kel'], rehearsal: 'Tech Rehearsal #4', time: '4:15pm - 5:00pm' },
-        { group: 'Group 6', members: ['Laura', 'Merrin', 'Darren'], rehearsal: 'Tech Rehearsal #4', time: '5:00pm - 5:45pm' },
-        { group: 'Group 7', members: ['London', 'Jake'], rehearsal: 'Tech Rehearsal #4', time: '5:45pm - 6:30pm' },
-        { group: 'Group 8', members: ['Cassidy', 'Jon', 'Chris'], rehearsal: 'Tech Rehearsal #5', time: '6:30pm - 9:30pm' }
+        { group: 'Group 4', members: ['Elyse'], rehearsal: 'Tech Rehearsal #4', time: '3:30pm - 4:15pm' },
+        { group: 'Group 5', members: ['Jeremy'], rehearsal: 'Tech Rehearsal #4', time: '4:15pm - 5:00pm' },
+        { group: 'Group 6', members: ['Laura', 'Merrin'], rehearsal: 'Tech Rehearsal #4', time: '5:00pm - 5:45pm' },
+        { group: 'Group 7', members: ['London'], rehearsal: 'Tech Rehearsal #4', time: '5:45pm - 6:30pm' },
+        { group: 'Group 8', members: ['Cassidy'], rehearsal: 'Tech Rehearsal #5', time: '6:30pm - 9:30pm' }
       ]
     },
     {
@@ -69,7 +70,7 @@ export default function Evolution() {
       day: 'Thursday',
       venue: 'B. Iden Payne Theatre',
       groups: [
-        { group: 'Group 9', members: ['Maddie', 'Tri', 'Gloria', 'Betty'], rehearsal: 'Tech Rehearsal #6', time: '3:30pm - 6:30pm' },
+        { group: 'Group 9', members: ['Val', 'Emma'], rehearsal: 'Tech Rehearsal #6', time: '3:30pm - 6:30pm' },
         { group: 'Group 10', members: ['Katelyn', 'Lauren', 'Jake', 'Gloria'], rehearsal: 'Tech Rehearsal #7', time: '6:30pm - 9:30pm' }
       ]
     },

@@ -1,5 +1,4 @@
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
-import { UserButton } from '@clerk/clerk-react';
 import { useEffect, useState } from 'react';
 
 const navItems = [
@@ -275,7 +274,6 @@ export default function Layout() {
             >
               {darkMode ? '☀' : '☽'}
             </button>
-            <UserButton afterSignOutUrl="/" />
           </div>
         </div>
       </header>

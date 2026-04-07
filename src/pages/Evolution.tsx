@@ -40,7 +40,6 @@ export default function Evolution() {
       day: 'Monday',
       venue: 'B. Iden Payne Theatre',
       groups: [
-        { group: 'Group 1', members: ['Valentina', 'Emma', 'Marco'], rehearsal: 'Tech Rehearsal #1', time: '6:30pm - 9:30pm' },
         { group: 'Group 6', members: ['Maddie', 'Tri'], rehearsal: 'Tech Rehearsal #6', time: '3:30pm - 6:30pm' }
       ]
     },
@@ -70,7 +69,7 @@ export default function Evolution() {
       day: 'Thursday',
       venue: 'B. Iden Payne Theatre',
       groups: [
-        { group: 'Group 9', members: ['Val', 'Emma'], rehearsal: 'Tech Rehearsal #6', time: '3:30pm - 6:30pm' },
+        { group: 'Group 9', members: ['Val', 'Emma', 'Marco'], rehearsal: 'Tech Rehearsal #6', time: '3:30pm - 6:30pm' },
         { group: 'Group 10', members: ['Katelyn', 'Lauren', 'Jake', 'Gloria'], rehearsal: 'Tech Rehearsal #7', time: '6:30pm - 9:30pm' }
       ]
     },

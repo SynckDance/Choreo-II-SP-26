@@ -14,6 +14,7 @@ import TwoBodyProblem from './pages/TwoBodyProblem';
 import CollaborationLab from './pages/CollaborationLab';
 import ChoreographyForCamera from './pages/ChoreographyForCamera';
 import GenerativeMethods from './pages/GenerativeMethods';
+import Evolution from './pages/Evolution';
 
 export default function App() {
   return (
@@ -35,6 +36,7 @@ export default function App() {
           <Route path="resources/stage-designs" element={<StageDesigns />} />
           <Route path="resources/study-lab" element={<StudyLab />} />
           <Route path="books" element={<Books />} />
+          <Route path="evolution" element={<Evolution />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
